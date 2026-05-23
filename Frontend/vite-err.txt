@@ -1,0 +1,70 @@
+[2m4:04:40 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "d3-zoom" from "src/KnowledgeGraph.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/KnowledgeGraph.jsx[39m:15:31
+[33m  12 |  import { select } from "d3-selection";
+  13 |  import { drag } from "d3-drag";
+  14 |  import { zoom as d3zoom } from "d3-zoom";
+     |                                  ^
+  15 |  var _jsxFileName = "C:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/KnowledgeGraph.jsx";
+  16 |  import { jsxDEV as _jsxDEV } from "react/jsx-dev-runtime";[39m
+[2m4:04:40 pm[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "d3-zoom" from "src/KnowledgeGraph.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/KnowledgeGraph.jsx[39m:15:31
+[33m  12 |  import { select } from "d3-selection";
+  13 |  import { drag } from "d3-drag";
+  14 |  import { zoom as d3zoom } from "d3-zoom";
+     |                                  ^
+  15 |  var _jsxFileName = "C:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/KnowledgeGraph.jsx";
+  16 |  import { jsxDEV as _jsxDEV } from "react/jsx-dev-runtime";[39m
+      at TransformPluginContext._formatLog (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:30259:39)
+      at TransformPluginContext.error (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:30256:14)
+      at normalizeUrl (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:27544:18)
+      at async file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:27607:30
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:27575:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:30048:14)
+      at async loadAndTransform (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:24177:26)
+[2m4:04:40 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "d3-zoom" from "src/KnowledgeGraph.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/KnowledgeGraph.jsx[39m:15:31
+[33m  12 |  import { select } from "d3-selection";
+  13 |  import { drag } from "d3-drag";
+  14 |  import { zoom as d3zoom } from "d3-zoom";
+     |                                  ^
+  15 |  var _jsxFileName = "C:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/KnowledgeGraph.jsx";
+  16 |  import { jsxDEV as _jsxDEV } from "react/jsx-dev-runtime";[39m
+[2m4:04:40 pm[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "mermaid" from "src/ConceptMap.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/ConceptMap.jsx[39m:16:27
+[33m  15 |  function loadMermaid() {
+  16 |  	if (!mermaidLoader) {
+  17 |  		mermaidLoader = import("mermaid").then((m) => {
+     |                           ^
+  18 |  			const mermaid = m.default;
+  19 |  			mermaid.initialize({[39m
+      at TransformPluginContext._formatLog (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:30259:39)
+      at TransformPluginContext.error (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:30256:14)
+      at normalizeUrl (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:27544:18)
+      at async file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:27607:30
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:27575:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:30048:14)
+      at async loadAndTransform (file:///C:/DBS-DBE/Projects/Accessible%20Knowledge%20Accessing%20System/Frontend/node_modules/vite/dist/node/chunks/node.js:24177:26)
+[2m4:04:40 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "mermaid" from "src/ConceptMap.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/ConceptMap.jsx[39m:16:27
+[33m  15 |  function loadMermaid() {
+  16 |  	if (!mermaidLoader) {
+  17 |  		mermaidLoader = import("mermaid").then((m) => {
+     |                           ^
+  18 |  			const mermaid = m.default;
+  19 |  			mermaid.initialize({[39m
+[2m4:04:40 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "mermaid" from "src/ConceptMap.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/DBS-DBE/Projects/Accessible Knowledge Accessing System/Frontend/src/ConceptMap.jsx[39m:16:27
+[33m  15 |  function loadMermaid() {
+  16 |  	if (!mermaidLoader) {
+  17 |  		mermaidLoader = import("mermaid").then((m) => {
+     |                           ^
+  18 |  			const mermaid = m.default;
+  19 |  			mermaid.initialize({[39m

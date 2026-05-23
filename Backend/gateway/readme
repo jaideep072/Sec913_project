@@ -1,0 +1,16 @@
+Step 01: Activate venv
+----------------------
+python -m venv venv
+venv\Scripts\activate
+
+Step 02: Install fastapi, uvicorn and dotenv
+--------------------------------------------
+pip install fastapi uvicorn python-dotenv
+
+Step 03: Install httpx
+----------------------
+pip install httpx for forwarding request to spring
+
+or
+
+pip install -r requirements.txt

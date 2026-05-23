@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "workspace": {
+    "name": "Accessible Knowledge Accessing System",
+    "createdAt": 1779223279221,
+    "preset": "starter"
+  },
+  "authorizedRoots": [
+    "C:\\DBS-DBE\\Projects\\Accessible Knowledge Accessing System"
+  ],
+  "reload": null
+}
