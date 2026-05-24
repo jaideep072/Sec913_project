@@ -9,6 +9,14 @@
 // hundreds of nodes.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+
+function useEscape(onClose) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+}
 import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } from 'd3-force';
 import { select } from 'd3-selection';
 import { drag } from 'd3-drag';
@@ -67,6 +75,8 @@ function KnowledgeGraph({ resources, sections, onSelect, onClose }) {
   const containerRef = useRef(null);
   const [hover, setHover] = useState(null);
   const [focused, setFocused] = useState(null);
+
+  useEscape(onClose);
 
   // Build graph data only when resources change
   const data = useMemo(() => buildGraph(resources || []), [resources]);

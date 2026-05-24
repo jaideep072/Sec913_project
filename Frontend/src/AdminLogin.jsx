@@ -4,7 +4,7 @@
 // /authservice/signin endpoint; this is just a separate, less-prominent way in.
 // Logging in as a non-Admin here just routes you to your normal portal (no harm).
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signinUser, storeToken, clearToken } from './api.js';
 
 function AdminLogin({ onAuthSuccess }) {
@@ -20,6 +20,14 @@ function AdminLogin({ onAuthSuccess }) {
     setPassword('');
     setError('');
   };
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async (e) => {
     e.preventDefault();

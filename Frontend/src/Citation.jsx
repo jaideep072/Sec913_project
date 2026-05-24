@@ -4,7 +4,7 @@
 // (title, author, year, sectionId). No backend, no library.
 // Accessed from a small "Cite" button on the resource detail panel.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const FORMATS = ['APA', 'MLA', 'Chicago', 'BibTeX'];
 
@@ -82,6 +82,14 @@ function Citation({ resource }) {
   const [open, setOpen] = useState(false);
   const [fmt, setFmt] = useState('APA');
   const [copied, setCopied] = useState(false);
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, setOpen]);
 
   const text = useMemo(
     () => (resource ? FORMATTERS[fmt](resource) : ''),

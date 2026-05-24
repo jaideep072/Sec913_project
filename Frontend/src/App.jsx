@@ -284,6 +284,18 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
     } catch (e) { setRequestError(e.message); }
   };
 
+  // Close modals on Escape key
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') {
+        if (showMyRequests) setShowMyRequests(false);
+        if (showGraph) setShowGraph(false);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [showMyRequests, showGraph]);
+
   // ── External browse handlers ──
   const runExtSearch = async (e) => {
     e?.preventDefault();
@@ -379,6 +391,16 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
 
   return (
     <div className="app-shell">
+      {/* Skip-to-content link — first focusable element for keyboard users */}
+      <a href="#main-content" style={{
+        position: 'absolute', top: -100, left: 8, zIndex: 9999,
+        padding: '8px 16px', background: '#0f172a', color: 'white',
+        borderRadius: 8, fontWeight: 600, fontSize: 14,
+        transition: 'top 0.1s ease',
+      }}
+        onFocus={e => e.target.style.top = '8px'}
+        onBlur={e => e.target.style.top = '-100px'}
+      >Skip to content</a>
       <header className="header">
         <div className="header-top">
           <div>
@@ -394,7 +416,7 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
         </div>
       </header>
 
-      <main className="section-layout">
+      <main id="main-content" className="section-layout">
         {/* ── LEFT SIDEBAR: vertical tabs + resource list ── */}
         <aside className="sidebar-panel">
           {/* Vertical browse tabs */}

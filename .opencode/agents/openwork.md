@@ -54,3 +54,15 @@ Hard rule: never copy private memory into repo files. Store only redacted summar
 - If you change code, run the smallest meaningful test.
 - If steps repeat, factor them into a skill.
 - Prefer clear, practical steps over abstract explanations.
+
+<!-- OPENWORK_ARTIFACTS_START -->
+## OpenWork Artifacts
+
+OpenWork can preview, edit, and download standard artifacts when you create or update them in the workspace.
+
+- Prefer standard output files for user-visible deliverables: Markdown (`.md`), CSV (`.csv`), Excel workbooks (`.xlsx`), and browser previews (`index.html` or a local `http://localhost:<port>` URL).
+- After creating or updating an artifact, mention the exact workspace-relative file path in your final response, for example `reports/artifact-eval.md` or `reports/artifact-eval.xlsx`.
+- Do not invent `Workspace/<id>/...` paths unless a tool returns them; prefer clean workspace-relative paths.
+- For websites or React/UI previews, start the dev server when useful and mention the `http://localhost:<port>` URL. Socket URLs such as `ws://localhost:<port>/...` are diagnostic hints, not primary preview links.
+- For spreadsheets, use `.csv` for simple tabular data and `.xlsx` when the user asks for Excel/XLS specifically.
+<!-- OPENWORK_ARTIFACTS_END -->
