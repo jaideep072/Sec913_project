@@ -4,7 +4,8 @@
 // (title, author, year, sectionId). No backend, no library.
 // Accessed from a small "Cite" button on the resource detail panel.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import useFocusTrap from './useFocusTrap.js';
 
 const FORMATS = ['APA', 'MLA', 'Chicago', 'BibTeX'];
 
@@ -82,6 +83,9 @@ function Citation({ resource }) {
   const [open, setOpen] = useState(false);
   const [fmt, setFmt] = useState('APA');
   const [copied, setCopied] = useState(false);
+  const dialogRef = useRef(null);
+
+  useFocusTrap(dialogRef, open);
 
   // Close on Escape key
   useEffect(() => {
@@ -114,7 +118,7 @@ function Citation({ resource }) {
 
       {open && (
         <div onClick={() => setOpen(false)} style={overlay}>
-          <div onClick={e => e.stopPropagation()} style={modal} role="dialog" aria-labelledby="cite-h">
+          <div ref={dialogRef} onClick={e => e.stopPropagation()} style={modal} role="dialog" aria-labelledby="cite-h">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 id="cite-h" style={{ margin: 0, fontSize: 20 }}>📝 Cite this resource</h2>
               <button onClick={() => setOpen(false)} style={closeBtn} aria-label="Close">✕</button>

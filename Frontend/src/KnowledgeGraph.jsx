@@ -9,6 +9,7 @@
 // hundreds of nodes.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import useFocusTrap from './useFocusTrap.js';
 
 function useEscape(onClose) {
   useEffect(() => {
@@ -73,10 +74,12 @@ function buildGraph(resources) {
 function KnowledgeGraph({ resources, sections, onSelect, onClose }) {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
+  const graphRef = useRef(null);
   const [hover, setHover] = useState(null);
   const [focused, setFocused] = useState(null);
 
   useEscape(onClose);
+  useFocusTrap(graphRef, true);
 
   // Build graph data only when resources change
   const data = useMemo(() => buildGraph(resources || []), [resources]);
@@ -178,7 +181,7 @@ function KnowledgeGraph({ resources, sections, onSelect, onClose }) {
   }, [data, onSelect]);
 
   return (
-    <div style={{
+    <div ref={graphRef} style={{
       position: 'fixed', inset: 0, background: 'white', zIndex: 900,
       display: 'flex', flexDirection: 'column',
     }}>

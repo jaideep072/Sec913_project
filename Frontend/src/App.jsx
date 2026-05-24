@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import useFocusTrap from './useFocusTrap.js';
 
 import Librarian from './librarian.jsx';
 import Staff from './staff.jsx';
@@ -222,6 +223,7 @@ function ResourceDetailPanel({ resource, allSections, onRequest, requestState, v
 /* ── Student / Staff Knowledge Portal ─────────────────────── */
 
 function StudentPortal({ user, onLogout, allResources, sections }) {
+  const requestsModalRef = useRef(null);
   // ── Local catalog state ──
   const [searchText, setSearchText] = useState('');
   const [selectedResourceId, setSelectedResourceId] = useState(null);
@@ -232,6 +234,8 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
   const [myRequests, setMyRequests] = useState([]);
   const [showGraph, setShowGraph] = useState(false);
   const [selectedResourceDetail, setSelectedResourceDetail] = useState(null);
+
+  useFocusTrap(requestsModalRef, showMyRequests);
 
   // ── External browse state ──
   const [browseMode, setBrowseMode] = useState('catalog'); // 'catalog' | 'openlibrary' | 'arxiv'
@@ -455,7 +459,7 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
               {filteredResources.length === 0 && <p className="muted">No matching resources found.</p>}
 
               {filteredResources.length > 0 && (
-                <ul className="list" style={{ marginTop: 6 }}>
+                <ul className="list" style={{ marginTop: 6 }} aria-live="polite" aria-label="Search results">
                   {filteredResources.map(item => {
                     const locked = user?.role === 'Student' && !item.summary && !item.author;
                     return (
@@ -487,7 +491,10 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
             /* ── External browse (Open Library / arXiv) ── */
             <>
               <form onSubmit={runExtSearch} className="search-wrapper" style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                <input className="search-input" type="search"
+                <label htmlFor="ext-search" className="sr-only">
+                  {browseMode === 'openlibrary' ? 'Search books' : 'Search papers'}
+                </label>
+                <input id="ext-search" className="search-input" type="search"
                   value={extQuery}
                   onChange={e => setExtQuery(e.target.value)}
                   placeholder={browseMode === 'openlibrary'
@@ -496,6 +503,7 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
                 <button type="submit" className="add-book-btn" disabled={extBusy || !extQuery.trim()}
                   style={{ padding: '6px 12px', fontSize: 12, whiteSpace: 'nowrap' }}>
                   {extBusy ? '…' : '🔍'}
+                  <span className="sr-only">Search</span>
                 </button>
               </form>
 
@@ -578,7 +586,7 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
       </main>
 
       {requestError && (
-        <div style={{
+        <div role="alert" style={{
           position: 'fixed', bottom: 20, right: 20,
           background: '#fee2e2', color: '#991b1b',
           padding: '10px 16px', borderRadius: 8, zIndex: 100,
@@ -607,7 +615,7 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
         }} onClick={() => setShowMyRequests(false)}>
-          <div onClick={e => e.stopPropagation()} style={{
+          <div ref={requestsModalRef} onClick={e => e.stopPropagation()} style={{
             background: 'white', borderRadius: 12, padding: 24,
             maxWidth: 800, width: '90%', maxHeight: '80vh', overflowY: 'auto',
           }}>
@@ -760,7 +768,7 @@ function App() {
   if (loadError) {
     return (
       <div className="app-shell" style={{ padding: 40 }}>
-        <p className="auth-error">Couldn't reach the backend: {loadError}</p>
+        <p className="auth-error" role="alert">Couldn't reach the backend: {loadError}</p>
         <p className="muted">Make sure the Spring service (:8001) and the gateway (:8000) are running.</p>
         <button className="btn-ghost" onClick={reloadCatalog}>Retry</button>
         <button className="btn-ghost" onClick={handleLogout} style={{ marginLeft: 8 }}>Log out</button>

@@ -4,13 +4,17 @@
 // /authservice/signin endpoint; this is just a separate, less-prominent way in.
 // Logging in as a non-Admin here just routes you to your normal portal (no harm).
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { signinUser, storeToken, clearToken } from './api.js';
+import useFocusTrap from './useFocusTrap.js';
 
 function AdminLogin({ onAuthSuccess }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const adminModalRef = useRef(null);
+
+  useFocusTrap(adminModalRef, open);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -102,6 +106,7 @@ function AdminLogin({ onAuthSuccess }) {
           }}
         >
           <div
+            ref={adminModalRef}
             onClick={e => e.stopPropagation()}
             style={{
               background: 'white',

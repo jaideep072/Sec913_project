@@ -253,7 +253,7 @@ function Staff({ user, onLogout, resources: sharedResources }) {
       <main className="staff-main">
 
         {loadError && (
-          <p style={{
+          <p role="alert" style={{
             background: '#fff4e5', color: '#8a4b00',
             padding: '10px 14px', borderRadius: 8, marginBottom: 12
           }}>{loadError}</p>
