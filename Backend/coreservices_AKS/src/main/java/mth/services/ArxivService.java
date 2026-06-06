@@ -44,12 +44,16 @@ import mth.security.RoleGuard;
  *   http://export.arxiv.org/api/query?search_query=all:quantum+computing&max_results=10&sortBy=relevance
  *
  * Rate limit: arXiv asks for no more than 1 request per 3 seconds.
- * We stay well under that in normal use.
+ * We enforce this with a static throttle to avoid 429 responses.
  */
 @Service
 public class ArxivService {
 
 	private static final String ARXIV_API = "https://export.arxiv.org/api/query?search_query=all:%s&max_results=%d&sortBy=relevance&sortOrder=descending";
+	private static final long MIN_INTERVAL_MS = 3500; // 3.5s to be safe
+
+	/** Last arXiv API call timestamp (static = shared across all users). */
+	private static volatile long lastArxivCall = 0;
 
 	private final HttpClient http = HttpClient.newBuilder()
 			.connectTimeout(Duration.ofSeconds(10))
@@ -77,12 +81,44 @@ public class ArxivService {
 				.GET()
 				.build();
 
-		HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
-		if (res.statusCode() / 100 != 2) {
-			throw new RuntimeException("arXiv API returned HTTP " + res.statusCode());
+		HttpResponse<String> res = sendWithRetry(req, 2);
+		return parseAtomFeed(res.body());
+	}
+
+	/**
+	 * Send the request, respecting arXiv's rate limit and retrying on 429.
+	 * arXiv asks for at most 1 request per 3 seconds.
+	 */
+	private HttpResponse<String> sendWithRetry(HttpRequest req, int maxRetries) throws Exception {
+		HttpResponse<String> res = null;
+		for (int attempt = 0; attempt <= maxRetries; attempt++) {
+			// Enforce minimum interval between API calls
+			long now = System.currentTimeMillis();
+			long wait = lastArxivCall + MIN_INTERVAL_MS - now;
+			if (wait > 0) {
+				Thread.sleep(wait);
+			}
+
+			res = http.send(req, HttpResponse.BodyHandlers.ofString());
+			lastArxivCall = System.currentTimeMillis();
+
+			if (res.statusCode() == 429 && attempt < maxRetries) {
+				// Exponential backoff: 4s, 8s, …
+				long backoff = (long) Math.pow(2, attempt + 2) * 1000;
+				Thread.sleep(backoff);
+				continue;
+			}
+
+			if (res.statusCode() / 100 == 2) {
+				return res;
+			}
+
+			// Non-retryable error
+			throw new RuntimeException("arXiv API returned HTTP " + res.statusCode()
+				+ (res.body() != null && !res.body().isBlank() ? ": " + res.body().substring(0, Math.min(200, res.body().length())) : ""));
 		}
 
-		return parseAtomFeed(res.body());
+		throw new RuntimeException("arXiv API returned HTTP 429 after " + maxRetries + " retries.");
 	}
 
 	/**

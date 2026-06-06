@@ -158,3 +158,11 @@ export const borrowsApi = {
                                           }),
   remove:         (id)                => request('DELETE', `/borrows/${id}`),
 };
+
+// ── reviews (Node.js + MongoDB) ──────────────────────────────
+
+export const reviewsApi = {
+  list:   (resourceId) => request('GET', `/reviews?resourceId=${encodeURIComponent(resourceId)}`),
+  create: (review)     => request('POST', '/reviews', { body: review }),
+  remove: (id)         => request('DELETE', `/reviews/${id}`),
+};

@@ -44,6 +44,9 @@ public class OpenLibraryService {
 
 	private static final String SEARCH_URL = "https://openlibrary.org/search.json?q=%s&limit=%d";
 	private static final String COVER_URL  = "https://covers.openlibrary.org/b/id/%s-M.jpg";
+	private static final long MIN_INTERVAL_MS = 1000; // 1s between Open Library calls
+
+	private static volatile long lastOlCall = 0;
 
 	private final HttpClient http = HttpClient.newBuilder()
 			.connectTimeout(Duration.ofSeconds(10))
@@ -73,11 +76,7 @@ public class OpenLibraryService {
 				.GET()
 				.build();
 
-		HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
-		if (res.statusCode() / 100 != 2) {
-			throw new RuntimeException("Open Library returned HTTP " + res.statusCode());
-		}
-
+		HttpResponse<String> res = sendWithRetry(req, 1);
 		JsonNode root = mapper.readTree(res.body());
 		JsonNode docs = root.get("docs");
 		List<Map<String, Object>> out = new ArrayList<>();
@@ -95,6 +94,34 @@ public class OpenLibraryService {
 			out.add(row);
 		}
 		return out;
+	}
+
+	/**
+	 * Send request with rate-limit throttle and optional 429 retry.
+	 */
+	private HttpResponse<String> sendWithRetry(HttpRequest req, int maxRetries) throws Exception {
+		HttpResponse<String> res = null;
+		for (int attempt = 0; attempt <= maxRetries; attempt++) {
+			long now = System.currentTimeMillis();
+			long wait = lastOlCall + MIN_INTERVAL_MS - now;
+			if (wait > 0) {
+				Thread.sleep(wait);
+			}
+			res = http.send(req, HttpResponse.BodyHandlers.ofString());
+			lastOlCall = System.currentTimeMillis();
+
+			if (res.statusCode() == 429 && attempt < maxRetries) {
+				long backoff = (long) Math.pow(2, attempt + 1) * 1000; // 2s, 4s
+				Thread.sleep(backoff);
+				continue;
+			}
+			if (res.statusCode() / 100 == 2) {
+				return res;
+			}
+			throw new RuntimeException("Open Library returned HTTP " + res.statusCode()
+				+ (res.body() != null && !res.body().isBlank() ? ": " + res.body().substring(0, Math.min(200, res.body().length())) : ""));
+		}
+		throw new RuntimeException("Open Library returned HTTP 429 after " + maxRetries + " retries.");
 	}
 
 	/**

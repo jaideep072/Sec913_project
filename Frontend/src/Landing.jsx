@@ -52,7 +52,7 @@ function Landing({ onAuthSuccess }) {
               Get started now
             </button>
             <span className="landing-cta-note">
-            
+
             </span>
           </div>
         </section>
@@ -97,7 +97,7 @@ function Landing({ onAuthSuccess }) {
       </section>
 
       <footer className="landing-footer">
-        <p>@2026 Made by Team of three !! With guidence of padmanabham sir</p>
+        <p>@2500032630 Sec913 </p>
       </footer>
 
       {/* Discreet admin-only entrance at bottom-left */}

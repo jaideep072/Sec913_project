@@ -11,17 +11,77 @@ import Citation from './Citation.jsx';
 import KnowledgeGraph from './KnowledgeGraph.jsx';
 import {
   sectionsApi, resourcesApi, clearToken, getStoredToken, fetchUserInfo,
-  requestsApi, externalApi,
+  requestsApi, externalApi, reviewsApi,
 } from './api.js';
 
 /* ── ResourceDetailPanel ─────────────────────── */
 
 import { LANGUAGES, translateText } from './translate.js';
 
-function ResourceDetailPanel({ resource, allSections, onRequest, requestState, viewerRole, onTagClick, similarResources, onSimilarClick }) {
+function ResourceDetailPanel({ resource, allSections, onRequest, requestState, viewerRole, onTagClick, similarResources, onSimilarClick, user }) {
   const [targetLang, setTargetLang] = useState('');
   const [translatedBody, setTranslatedBody] = useState(null);
   const [translating, setTranslating] = useState(false);
+
+  // Reviews & Comments state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState('');
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const fetchReviews = useCallback(async () => {
+    if (!resource?.id) return;
+    setReviewsLoading(true);
+    setReviewsError('');
+    try {
+      const data = await reviewsApi.list(resource.id);
+      setReviews(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setReviewsError(err.message || 'Failed to load reviews');
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [resource?.id]);
+
+  useEffect(() => {
+    fetchReviews();
+    setNewRating(5);
+    setNewComment('');
+  }, [resource?.id, fetchReviews]);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setSubmittingReview(true);
+    try {
+      await reviewsApi.create({
+        resourceId: resource.id,
+        reviewerName: user?.fullname || 'Anonymous User',
+        rating: newRating,
+        comment: newComment
+      });
+      setNewComment('');
+      setNewRating(5);
+      fetchReviews();
+    } catch (err) {
+      alert(err.message || 'Failed to submit review');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm('Are you sure you want to delete this review?')) return;
+    try {
+      await reviewsApi.remove(reviewId);
+      fetchReviews();
+    } catch (err) {
+      alert(err.message || 'Failed to delete review');
+    }
+  };
+
 
   // Reset translation when resource changes
   useEffect(() => {
@@ -300,6 +360,102 @@ function ResourceDetailPanel({ resource, allSections, onRequest, requestState, v
             </div>
           </div>
         )}
+
+        {/* ── Reviews & Comments Section (Node.js + MongoDB) ── */}
+        <div className="reviews-section">
+          <h4 className="reviews-title">Discussion & Reviews</h4>
+          
+          {reviewsLoading ? (
+            <p className="muted" style={{ fontSize: 13 }}>Loading reviews...</p>
+          ) : reviewsError ? (
+            <p className="muted" style={{ fontSize: 13, color: '#dc2626' }}>{reviewsError}</p>
+          ) : reviews.length === 0 ? (
+            <p className="muted" style={{ fontSize: 13, fontStyle: 'italic', marginBottom: '1.25rem' }}>
+              No reviews yet. Be the first to share your thoughts on this resource!
+            </p>
+          ) : (
+            <div className="reviews-list">
+              {reviews.map(review => {
+                const canDelete = 
+                  user?.email === review.reviewerEmail || 
+                  user?.role === 'Librarian' || 
+                  user?.role === 'Admin';
+                return (
+                  <div key={review._id} className="review-card">
+                    <div className="review-meta">
+                      <div className="reviewer-info">
+                        <span className="reviewer-name">{review.reviewerName}</span>
+                        <span className="review-date">
+                          {new Date(review.createdAt).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <div className="review-rating" aria-label={`Rated ${review.rating} out of 5 stars`}>
+                        {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                      </div>
+                    </div>
+                    <p className="review-comment">{review.comment}</p>
+                    {canDelete && (
+                      <button 
+                        type="button" 
+                        className="review-delete-btn" 
+                        onClick={() => handleDeleteReview(review._id)}
+                      >
+                        🗑️ Delete Review
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Add Review Form */}
+          <form onSubmit={handleSubmitReview} className="review-form">
+            <h5 className="review-form-title">Write a Review</h5>
+            
+            <div className="review-form-group">
+              <label htmlFor="rating" className="review-label">Rating</label>
+              <select 
+                id="rating" 
+                value={newRating} 
+                onChange={e => setNewRating(Number(e.target.value))}
+                className="review-select"
+              >
+                <option value={5}>5 Stars ★★★★★</option>
+                <option value={4}>4 Stars ★★★★☆</option>
+                <option value={3}>3 Stars ★★★☆☆</option>
+                <option value={2}>2 Stars ★★☆☆☆</option>
+                <option value={1}>1 Star ★☆☆☆☆</option>
+              </select>
+            </div>
+
+            <div className="review-form-group">
+              <label htmlFor="comment" className="review-label">Comment</label>
+              <textarea
+                id="comment"
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                placeholder="Share your thoughts about this book or resource..."
+                required
+                className="review-textarea"
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={submittingReview || !newComment.trim()} 
+              className="review-submit-btn"
+            >
+              {submittingReview ? 'Submitting...' : 'Submit Review'}
+            </button>
+          </form>
+        </div>
       </div>
     </aside>
   );
@@ -732,6 +888,7 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
             onTagClick={(tag) => { setBrowseMode('catalog'); setSearchText(tag); }}
             similarResources={similarResources}
             onSimilarClick={(id) => setSelectedResourceId(id)}
+            user={user}
           />
         )}
         {browseMode !== 'catalog' && (

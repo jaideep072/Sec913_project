@@ -32,7 +32,7 @@ function Auth({ onAuthSuccess }) {
     setError('');
     setMessage('');
 
-    if (!form.role) {
+    if (mode === 'signup' && !form.role) {
       setError('Please select your role.');
       return;
     }
@@ -104,26 +104,25 @@ function Auth({ onAuthSuccess }) {
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
 
-          {/* ROLE DROPDOWN (VISIBLE ALWAYS) */}
-          <div className="auth-field">
-            <label htmlFor="role">Role</label>
-            <select
-              id="role"
-              name="role"
-              className="auth-select"
-              value={form.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select your role</option>
-              <option value="Student">Student</option>
-              <option value="Librarian">Librarian</option>
-              <option value="Staff">Staff</option>
-            </select>
-          </div>
-
           {mode === 'signup' && (
             <>
+              <div className="auth-field">
+                <label htmlFor="role">Role</label>
+                <select
+                  id="role"
+                  name="role"
+                  className="auth-select"
+                  value={form.role}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select your role</option>
+                  <option value="Student">Student</option>
+                  <option value="Librarian">Librarian</option>
+                  <option value="Staff">Staff</option>
+                </select>
+              </div>
+
               <div className="auth-field">
                 <label htmlFor="name">Full Name</label>
                 <input

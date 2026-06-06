@@ -6,6 +6,7 @@ from controllers.init import (
     ResourcesRouter,
     BorrowsRouter,
     ExternalRouter,
+    ReviewsRouter,
 )
 
 app = FastAPI(title="AKS Gateway")
@@ -26,6 +27,7 @@ app.include_router(SectionsRouter)
 app.include_router(ResourcesRouter)
 app.include_router(BorrowsRouter)
 app.include_router(ExternalRouter)
+app.include_router(ReviewsRouter)
 
 
 @app.get("/")
