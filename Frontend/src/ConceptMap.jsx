@@ -30,7 +30,7 @@ function loadMermaid() {
 function clean(s) {
   if (!s) return '';
   return String(s)
-    .replace(/[\[\]\|\{\}"']/g, ' ')   // strip mermaid-significant chars
+    .replace(/[\[\]\|\{\}"'()]/g, ' ')   // strip mermaid-significant chars
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 60);

@@ -1,5 +1,5 @@
-import express from 'express';
 import mongoose from 'mongoose';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import reviewsRouter from './routes/reviews.js';
@@ -16,18 +16,18 @@ app.use(express.json());
 // Register routers
 app.use('/reviews', reviewsRouter);
 
-// Database connection URI from environment variable or user's provided Atlas cluster URI as default
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://test:admin@cluster0.hxyc73f.mongodb.net/Accessible_Knowledge_System?appName=Cluster0';
+// Connect to Local MongoDB Server
+const MONGODB_URI = 'mongodb://127.0.0.1:27017/STEM';
 
-console.log('Connecting to MongoDB...');
+console.log('Connecting to Local MongoDB...');
 mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log('Connected to MongoDB successfully!');
+    console.log('Connected to Local MongoDB successfully!');
     app.listen(PORT, () => {
       console.log(`Node.js reviews service running on port ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err.message);
+    console.error('Failed to connect to Local MongoDB:', err.message);
     process.exit(1);
   });
