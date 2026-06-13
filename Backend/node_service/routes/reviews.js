@@ -19,6 +19,59 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Vector Search Endpoint
+import { pipeline } from '@xenova/transformers';
+
+let generateEmbedding = null;
+const getEmbedder = async () => {
+  if (!generateEmbedding) {
+    console.log('Loading AI model for search...');
+    generateEmbedding = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+  }
+  return generateEmbedding;
+};
+
+router.get('/search/vector', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ message: "Search query 'q' is required" });
+    }
+
+    const embedder = await getEmbedder();
+    const output = await embedder(q, { pooling: 'mean', normalize: true });
+    const queryVector = Array.from(output.data);
+
+    // Use MongoDB Atlas $vectorSearch
+    const results = await Review.aggregate([
+      {
+        $vectorSearch: {
+          index: "vector_index",
+          path: "embedding",
+          queryVector: queryVector,
+          numCandidates: 100,
+          limit: 5
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          resourceId: 1,
+          reviewerName: 1,
+          rating: 1,
+          comment: 1,
+          score: { $meta: "vectorSearchScore" }
+        }
+      }
+    ]);
+
+    res.json(results);
+  } catch (error) {
+    console.error("Vector search error:", error);
+    res.status(500).json({ message: "Error performing vector search", error: error.message });
+  }
+});
+
 // Create a review
 router.post('/', authenticateToken, async (req, res) => {
   const { resourceId, reviewerName, rating, comment } = req.body;

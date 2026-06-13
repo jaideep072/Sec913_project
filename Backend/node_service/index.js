@@ -1,10 +1,17 @@
+import dns from 'dns';
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 import mongoose from 'mongoose';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import reviewsRouter from './routes/reviews.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 8002;
@@ -16,13 +23,13 @@ app.use(express.json());
 // Register routers
 app.use('/reviews', reviewsRouter);
 
-// Connect to Local MongoDB Server
-const MONGODB_URI = 'mongodb://127.0.0.1:27017/STEM';
+// Connect to MongoDB using the URI from .env
+const MONGODB_URI = process.env.MONGODB_URI;
 
-console.log('Connecting to Local MongoDB...');
+console.log('Connecting to MongoDB Atlas...');
 mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log('Connected to Local MongoDB successfully!');
+    console.log('Connected to MongoDB (Atlas) successfully!');
     app.listen(PORT, () => {
       console.log(`Node.js reviews service running on port ${PORT}`);
     });
