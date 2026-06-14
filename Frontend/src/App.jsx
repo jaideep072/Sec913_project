@@ -18,10 +18,53 @@ import {
 
 import { LANGUAGES, translateText } from './translate.js';
 
+function HighlightableText({ text, activeIndex, speakingState }) {
+  if (!text) return null;
+  if (speakingState !== 'playing' && speakingState !== 'paused') {
+    return <p className="detail-description" style={{ whiteSpace: 'pre-wrap' }}>{text}</p>;
+  }
+
+  const words = [];
+  const matches = text.matchAll(/([^\s\n]+)|(\s+|\n+)/g);
+  for (const match of matches) {
+    const val = match[0];
+    const start = match.index;
+    const isWord = !match[2];
+    words.push({ text: val, start, end: start + val.length, isWord });
+  }
+
+  return (
+    <p className="detail-description" style={{ lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+      {words.map((w, idx) => {
+        const isActive = w.isWord && activeIndex >= w.start && activeIndex < w.end;
+        return (
+          <span
+            key={idx}
+            style={{
+              background: isActive ? '#fef08a' : 'transparent',
+              color: isActive ? '#1e293b' : 'inherit',
+              padding: isActive ? '2px 4px' : '0',
+              borderRadius: isActive ? '4px' : '0',
+              fontWeight: isActive ? 'bold' : 'normal',
+              transition: 'background-color 0.1s ease'
+            }}
+          >
+            {w.text}
+          </span>
+        );
+      })}
+    </p>
+  );
+}
+
 function ResourceDetailPanel({ resource, allSections, onRequest, requestState, viewerRole, onTagClick, similarResources, onSimilarClick, user }) {
   const [targetLang, setTargetLang] = useState('');
   const [translatedBody, setTranslatedBody] = useState(null);
   const [translating, setTranslating] = useState(false);
+
+  // Read Aloud boundary tracking
+  const [spokenCharIndex, setSpokenCharIndex] = useState(-1);
+  const [speakingState, setSpeakingState] = useState('idle');
 
   // Reviews & Comments state
   const [reviews, setReviews] = useState([]);
@@ -208,7 +251,13 @@ function ResourceDetailPanel({ resource, allSections, onRequest, requestState, v
           </div>
         )}
 
-        <ReadAloud resource={resource} translatedText={translatedBody} targetLang={targetLang} />
+        <ReadAloud 
+          resource={resource} 
+          translatedText={translatedBody} 
+          targetLang={targetLang} 
+          onWordBoundary={setSpokenCharIndex}
+          onStateChange={setSpeakingState}
+        />
         <ConceptMap resource={resource} />
 
         {/* ── Translate ── */}
@@ -256,7 +305,11 @@ function ResourceDetailPanel({ resource, allSections, onRequest, requestState, v
       </div>
 
       <div className="detail-body">
-        <p className="detail-description">{resource.body}</p>
+        <HighlightableText 
+          text={translatedBody || resource.body} 
+          activeIndex={spokenCharIndex} 
+          speakingState={speakingState} 
+        />
 
         {resource.keyQuote && (
           <blockquote className="detail-quote">
@@ -477,6 +530,26 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
   const [selectedResourceDetail, setSelectedResourceDetail] = useState(null);
   const [popularResources, setPopularResources] = useState([]);
 
+  // Novelty features state
+  const [searchType, setSearchType] = useState('all'); // 'all' | 'author_researcher' | 'tag'
+  const [showStats, setShowStats] = useState(false);
+  const [compareList, setCompareList] = useState([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+
+  const handleToggleCompare = (item) => {
+    setCompareList(prev => {
+      const exists = prev.some(x => x.id === item.id);
+      if (exists) {
+        return prev.filter(x => x.id !== item.id);
+      }
+      if (prev.length >= 2) {
+        alert('You can only compare up to 2 resources at a time!');
+        return prev;
+      }
+      return [...prev, item];
+    });
+  };
+
   // Fetch popular resources on mount
   useEffect(() => {
     resourcesApi.popular().then(setPopularResources).catch(() => {});
@@ -634,10 +707,21 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
     const query = searchText.trim().toLowerCase();
     if (!query) return sectionResources;
     return sectionResources.filter(item => {
-      const text = `${item.title} ${item.summary || ''} ${(item.tags || []).join(' ')}`;
-      return text.toLowerCase().includes(query);
+      if (searchType === 'author_researcher') {
+        const authorMatch = (item.author || '').toLowerCase().includes(query);
+        const researcherMatch = (item.keyFigures || []).some(figure => 
+          figure.toLowerCase().includes(query)
+        );
+        return authorMatch || researcherMatch;
+      } else if (searchType === 'tag') {
+        return (item.tags || []).some(tag => tag.toLowerCase().includes(query));
+      } else {
+        // 'all' search (includes title, summary, author, researchers, tags)
+        const text = `${item.title} ${item.author || ''} ${item.summary || ''} ${(item.tags || []).join(' ')} ${(item.keyFigures || []).join(' ')}`;
+        return text.toLowerCase().includes(query);
+      }
     });
-  }, [sectionResources, searchText]);
+  }, [sectionResources, searchText, searchType]);
 
   // Always fetch the detail fresh from the backend — that way, the moment Admin
   // confirms a borrow, the next click on this resource shows the full content.
@@ -687,6 +771,7 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
           <div className="header-auth">
             <span className="header-user"><strong>{user.name}</strong> · {user.role}</span>
             <button type="button" className="btn-ghost" onClick={() => setShowGraph(true)}>🌐 Knowledge Graph</button>
+            <button type="button" className="btn-ghost" onClick={() => setShowStats(true)}>📊 Catalog Insights</button>
             <button type="button" className="btn-ghost" onClick={openMyRequests}>📨 My Requests</button>
             <button type="button" className="btn-ghost" onClick={onLogout}>Log out</button>
           </div>
@@ -718,11 +803,44 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
           {browseMode === 'catalog' ? (
             /* ── Local catalog list ── */
             <>
-              <div className="search-wrapper" style={{ marginBottom: 8 }}>
+              <div className="search-wrapper" style={{ marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <input id="search" className="search-input" type="search"
                   value={searchText}
                   onChange={e => setSearchText(e.target.value)}
-                  placeholder="Search resources…" />
+                  placeholder={
+                    searchType === 'author_researcher' ? 'Search by author/researcher…' :
+                    searchType === 'tag' ? 'Search by tag…' : 'Search catalog…'
+                  } />
+                <div style={{ display: 'flex', gap: 6, fontSize: 10, color: '#64748b', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span>Filter by:</span>
+                  {[
+                    ['all', '🔍 All'],
+                    ['author_researcher', '✍️ Author/Researcher'],
+                    ['tag', '🏷️ Tag']
+                  ].map(([type, label]) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => {
+                        setSearchType(type);
+                        setSearchText(''); // Clear search on toggle to avoid empty results confusion
+                      }}
+                      style={{
+                        padding: '2px 8px',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: 4,
+                        background: searchType === type ? '#0f172a' : 'white',
+                        color: searchType === type ? 'white' : '#64748b',
+                        cursor: 'pointer',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        outline: 'none'
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="loading-status" role="status" aria-live="polite">
@@ -750,8 +868,33 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
                               Click to request access
                             </p>
                           )}
-                          <div className="list-tags">
-                            {(item.tags || []).map(t => <span key={t} className="mini-tag">#{t}</span>)}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                            <div className="list-tags">
+                              {(item.tags || []).map(t => <span key={t} className="mini-tag">#{t}</span>)}
+                            </div>
+                            {!locked && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleCompare(item);
+                                }}
+                                style={{
+                                  padding: '2px 6px',
+                                  fontSize: 10,
+                                  borderRadius: 4,
+                                  border: '1px solid #cbd5e1',
+                                  background: compareList.some(x => x.id === item.id) ? '#c84b31' : 'white',
+                                  color: compareList.some(x => x.id === item.id) ? 'white' : '#64748b',
+                                  cursor: 'pointer',
+                                  fontWeight: 600,
+                                  outline: 'none',
+                                  zIndex: 10
+                                }}
+                              >
+                                {compareList.some(x => x.id === item.id) ? '✓ Stack' : '⚖️ Compare'}
+                              </button>
+                            )}
                           </div>
                         </button>
                       </li>
@@ -920,6 +1063,302 @@ function StudentPortal({ user, onLogout, allResources, sections }) {
           onSelect={(id) => setSelectedResourceId(id)}
         />
       )}
+
+      {/* ── Compare Floating Stack Bar ── */}
+      {compareList.length > 0 && (
+        <div style={{
+          position: 'fixed', bottom: 30, left: '50%', transform: 'translateX(-50%)',
+          background: 'white', border: '1.5px solid var(--color-border-strong)', borderRadius: 12,
+          padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 16,
+          boxShadow: '0 8px 30px rgba(0,0,0,0.15)', zIndex: 999,
+          animation: 'slideUp 0.25s ease'
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-ink)' }}>
+            ⚖️ Comparison Stack ({compareList.length}/2): {compareList.map(x => x.title.slice(0, 15) + '...').join(' vs ')}
+          </span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => {
+                if (compareList.length < 2) {
+                  alert('Please select 2 resources to compare side-by-side!');
+                } else {
+                  setShowCompareModal(true);
+                }
+              }}
+              style={{
+                background: 'var(--color-accent)', color: 'white', border: 'none',
+                padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
+                fontSize: 12, fontWeight: 600, transition: 'opacity 0.15s ease'
+              }}
+              onMouseEnter={e => e.target.style.opacity = 0.9}
+              onMouseLeave={e => e.target.style.opacity = 1}
+            >
+              Compare Side-by-Side
+            </button>
+            <button
+              onClick={() => setCompareList([])}
+              style={{
+                background: 'transparent', color: 'var(--color-ink-3)', border: 'none',
+                cursor: 'pointer', fontSize: 12, fontWeight: 500
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Compare Modal (Side-by-Side comparison) ── */}
+      {showCompareModal && compareList.length === 2 && (() => {
+        const [itemA, itemB] = compareList;
+        const compareRows = [
+          { label: 'Author / Writer', getValue: item => item.author || 'Unknown' },
+          { label: 'Subject Category', getValue: item => (sections || []).find(s => s.id === item.sectionId)?.name || item.sectionId },
+          { label: 'Difficulty Level', getValue: item => (
+              <span className={`detail-chip detail-chip--${(item.difficulty || 'beginner').toLowerCase()}`} style={{ display: 'inline-block' }}>
+                {item.difficulty || 'Beginner'}
+              </span>
+            ) 
+          },
+          { label: 'Core Summary', getValue: item => item.summary || 'N/A' },
+          { label: 'Key Themes', getValue: item => (item.keyThemes || []).join(', ') || 'N/A' },
+          { label: 'Researchers / Figures', getValue: item => (item.keyFigures || []).join(', ') || 'N/A' },
+          { label: 'Notable Facts', getValue: item => (
+              <ul style={{ margin: 0, paddingLeft: 16 }}>
+                {(item.keyFacts || []).map((f, i) => <li key={i}>{f}</li>)}
+              </ul>
+            ) 
+          },
+          { label: 'Historical Impact', getValue: item => item.impact || 'N/A' },
+          { label: 'Why study this topic?', getValue: item => item.whyStudy || item.whyRead || 'N/A' }
+        ];
+
+        return (
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(26, 23, 20, 0.6)',
+            backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease'
+          }} onClick={() => setShowCompareModal(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'white', borderRadius: 16, padding: 28,
+              maxWidth: 900, width: '90%', maxHeight: '90vh', overflowY: 'auto',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 style={{ margin: 0, fontFamily: 'var(--font-display)', color: 'var(--color-ink)' }}>⚖️ Resource Comparison</h2>
+                <button onClick={() => setShowCompareModal(false)} style={{ border: 'none', background: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-ink-3)' }}>✕</button>
+              </div>
+              
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, color: 'var(--color-ink-2)' }}>
+                <thead>
+                  <tr style={{ background: 'var(--color-bg)', borderBottom: '2px solid var(--color-border)' }}>
+                    <th style={{ padding: 12, textAlign: 'left', width: '20%', fontWeight: 700 }}>Attribute</th>
+                    <th style={{ padding: 12, textAlign: 'left', width: '40%', fontWeight: 700, color: 'var(--color-accent)' }}>{itemA.title}</th>
+                    <th style={{ padding: 12, textAlign: 'left', width: '40%', fontWeight: 700, color: 'var(--color-accent-2)' }}>{itemB.title}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {compareRows.map((row, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)', verticalAlign: 'top' }}>
+                      <td style={{ padding: 12, fontWeight: 600, background: '#faf9f6' }}>{row.label}</td>
+                      <td style={{ padding: 12, lineHeight: 1.5 }}>{row.getValue(itemA)}</td>
+                      <td style={{ padding: 12, lineHeight: 1.5 }}>{row.getValue(itemB)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
+                <button 
+                  onClick={() => setShowCompareModal(false)} 
+                  style={{
+                    padding: '8px 16px', background: 'var(--color-ink)', color: 'white',
+                    border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600
+                  }}
+                >Close Comparison</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── SVG Metrics Dashboard Modal ── */}
+      {showStats && (() => {
+        // Calculate Statistics
+        const totalBooks = allResources.length;
+        const totalSecs = sections.length;
+        
+        const sectionCounts = {};
+        allResources.forEach(r => {
+          sectionCounts[r.sectionId] = (sectionCounts[r.sectionId] || 0) + 1;
+        });
+
+        const colorMap = {
+          literature: '#ef4444',
+          history:    '#f59e0b',
+          science:    '#10b981',
+          governance: '#3b82f6',
+        };
+        const defaultColor = '#64748b';
+
+        const chartData = sections.map(s => ({
+          name: s.name,
+          count: sectionCounts[s.id] || 0,
+          color: colorMap[s.id] || defaultColor
+        })).filter(d => d.count > 0);
+
+        const totalCount = chartData.reduce((acc, d) => acc + d.count, 0);
+
+        // Donut slice calculations
+        const radius = 50;
+        const circumference = 2 * Math.PI * radius; // ~314.16
+        let cumulativePercent = 0;
+        const donutSegments = chartData.map(d => {
+          const percent = totalCount > 0 ? d.count / totalCount : 0;
+          const strokeOffset = circumference - (percent * circumference);
+          const strokeDash = `${percent * circumference} ${circumference}`;
+          const rotation = cumulativePercent * 360;
+          cumulativePercent += percent;
+          return { ...d, strokeOffset, strokeDash, rotation };
+        });
+
+        // Difficulty Counts
+        const diffCounts = { Beginner: 0, Intermediate: 0, Advanced: 0 };
+        allResources.forEach(r => {
+          if (r.difficulty) {
+            const normalized = r.difficulty.charAt(0).toUpperCase() + r.difficulty.slice(1).toLowerCase();
+            diffCounts[normalized] = (diffCounts[normalized] || 0) + 1;
+          }
+        });
+        const diffColors = { Beginner: '#10b981', Intermediate: '#f59e0b', Advanced: '#ef4444' };
+
+        return (
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(26, 23, 20, 0.6)',
+            backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease'
+          }} onClick={() => setShowStats(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'white', borderRadius: 16, padding: 28,
+              maxWidth: 750, width: '90%', maxHeight: '90vh', overflowY: 'auto',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 style={{ margin: 0, fontFamily: 'var(--font-display)', color: 'var(--color-ink)' }}>📊 Catalog Insights</h2>
+                <button onClick={() => setShowStats(false)} style={{ border: 'none', background: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-ink-3)' }}>✕</button>
+              </div>
+
+              {/* Stats Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
+                <div style={{ background: 'var(--color-bg)', padding: 16, borderRadius: 12, border: '1px solid var(--color-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, color: 'var(--color-ink-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Total Catalog items</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-ink)' }}>{totalBooks}</div>
+                </div>
+                <div style={{ background: 'var(--color-bg)', padding: 16, borderRadius: 12, border: '1px solid var(--color-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, color: 'var(--color-ink-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Subject Categories</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-ink)' }}>{totalSecs}</div>
+                </div>
+                <div style={{ background: 'var(--color-bg)', padding: 16, borderRadius: 12, border: '1px solid var(--color-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, color: 'var(--color-ink-3)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Active Researchers</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-ink)' }}>
+                    {new Set(allResources.map(r => r.author).filter(Boolean)).size}
+                  </div>
+                </div>
+              </div>
+
+              {/* Charts grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24, alignItems: 'center' }}>
+                {/* Donut Chart */}
+                <div style={{ border: '1px solid var(--color-border)', borderRadius: 12, padding: 20, textAlign: 'center' }}>
+                  <h4 style={{ margin: '0 0 16px', fontSize: 13, textTransform: 'uppercase', color: 'var(--color-ink-3)', letterSpacing: '0.04em' }}>Category Distribution</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', width: 140, height: 140 }}>
+                      <svg width="140" height="140" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx="60" cy="60" r="50" fill="transparent" stroke="#f1f5f9" strokeWidth="12" />
+                        {donutSegments.map((seg, idx) => (
+                          <circle
+                            key={idx}
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            fill="transparent"
+                            stroke={seg.color}
+                            strokeWidth="12"
+                            strokeDasharray={seg.strokeDash}
+                            transform={`rotate(${seg.rotation} 60 60)`}
+                            style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                          />
+                        ))}
+                        <circle cx="60" cy="60" r="40" fill="white" />
+                        <text x="60" y="62" textAnchor="middle" dominantBaseline="middle" transform="rotate(90 60 60)" style={{ fontSize: 9, fontWeight: 'bold', fill: 'var(--color-ink)' }}>
+                          {totalCount} Items
+                        </text>
+                      </svg>
+                    </div>
+                    {/* Legend */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, textAlign: 'left', fontSize: 12 }}>
+                      {donutSegments.map((seg, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: 3, background: seg.color }} />
+                          <strong>{seg.name}</strong>: {seg.count} ({Math.round(seg.percent * 100)}%)
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bar Chart */}
+                <div style={{ border: '1px solid var(--color-border)', borderRadius: 12, padding: 20, textAlign: 'center' }}>
+                  <h4 style={{ margin: '0 0 16px', fontSize: 13, textTransform: 'uppercase', color: 'var(--color-ink-3)', letterSpacing: '0.04em' }}>Difficulty Metrics</h4>
+                  <div style={{ maxWidth: 360, margin: '0 auto' }}>
+                    <svg width="100%" height="120" viewBox="0 0 300 120">
+                      <line x1="40" y1="20" x2="280" y2="20" stroke="#f1f5f9" strokeDasharray="3 3" />
+                      <line x1="40" y1="55" x2="280" y2="55" stroke="#f1f5f9" strokeDasharray="3 3" />
+                      <line x1="40" y1="90" x2="280" y2="90" stroke="#cbd5e1" />
+                      
+                      {Object.entries(diffCounts).map(([level, count], idx) => {
+                        const maxVal = Math.max(...Object.values(diffCounts), 1);
+                        const barHeight = (count / maxVal) * 70;
+                        const barY = 90 - barHeight;
+                        const barX = 60 + idx * 80;
+                        
+                        return (
+                          <g key={idx}>
+                            <rect
+                              x={barX}
+                              y={barY}
+                              width="40"
+                              height={barHeight}
+                              fill={diffColors[level]}
+                              rx="4"
+                              style={{ transition: 'height 0.3s ease, y 0.3s ease' }}
+                            />
+                            <text x={barX + 20} y={barY - 6} textAnchor="middle" style={{ fontSize: 9, fill: 'var(--color-ink-3)', fontWeight: 'bold' }}>
+                              {count}
+                            </text>
+                            <text x={barX + 20} y="106" textAnchor="middle" style={{ fontSize: 10, fill: 'var(--color-ink-2)' }}>
+                              {level}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+                <button 
+                  onClick={() => setShowStats(false)} 
+                  style={{
+                    padding: '8px 16px', background: 'var(--color-ink)', color: 'white',
+                    border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600
+                  }}
+                >Close Insights</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <footer style={{
         textAlign: 'center', padding: '24px 0 8px',

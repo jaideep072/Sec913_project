@@ -13,6 +13,11 @@ async def list_resources(Token: str = Header(...),
     return await spring_request("GET", "/resources", token=Token, params=params)
 
 
+@router.get("/search")
+async def search_resources(q: str, Token: str = Header(...)):
+    return await spring_request("GET", "/resources/search", token=Token, params={"q": q})
+
+
 @router.get("/{resource_id}")
 async def get_resource(resource_id: int, Token: str = Header(...)):
     return await spring_request("GET", f"/resources/{resource_id}", token=Token)

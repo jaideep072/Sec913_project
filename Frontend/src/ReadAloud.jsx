@@ -21,7 +21,7 @@ function buildText(resource) {
   return parts.join('. ');
 }
 
-function ReadAloud({ resource, translatedText, targetLang }) {
+function ReadAloud({ resource, translatedText, targetLang, onWordBoundary, onStateChange }) {
   const [voices, setVoices] = useState([]);
   const [voiceURI, setVoiceURI] = useState('');
   const [rate, setRate] = useState(1.0);
@@ -65,13 +65,16 @@ function ReadAloud({ resource, translatedText, targetLang }) {
     if (targetLang) u.lang = targetLang;
     const v = voices.find(x => x.voiceURI === voiceURI);
     if (v) u.voice = v;
-    u.onstart   = () => setState('playing');
-    u.onend     = () => { setState('idle'); setProgress(0); };
-    u.onpause   = () => setState('paused');
-    u.onresume  = () => setState('playing');
-    u.onerror   = () => setState('idle');
+    u.onstart   = () => { setState('playing'); onStateChange?.('playing'); };
+    u.onend     = () => { setState('idle'); setProgress(0); onStateChange?.('idle'); onWordBoundary?.(-1); };
+    u.onpause   = () => { setState('paused'); onStateChange?.('paused'); };
+    u.onresume  = () => { setState('playing'); onStateChange?.('playing'); };
+    u.onerror   = () => { setState('idle'); onStateChange?.('idle'); onWordBoundary?.(-1); };
     u.onboundary = (e) => {
       if (text.length) setProgress(Math.min(1, e.charIndex / text.length));
+      if (e.name === 'word') {
+        onWordBoundary?.(e.charIndex);
+      }
     };
     utterRef.current = u;
     window.speechSynthesis.speak(u);
@@ -80,16 +83,20 @@ function ReadAloud({ resource, translatedText, targetLang }) {
   const pause = () => {
     if (!SUPPORTED) return;
     window.speechSynthesis.pause();
+    onStateChange?.('paused');
   };
   const resume = () => {
     if (!SUPPORTED) return;
     window.speechSynthesis.resume();
+    onStateChange?.('playing');
   };
   const stop = () => {
     if (!SUPPORTED) return;
     try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     setState('idle');
     setProgress(0);
+    onStateChange?.('idle');
+    onWordBoundary?.(-1);
   };
 
   // When user changes speed mid-playback, restart from the beginning at new rate.

@@ -31,6 +31,22 @@ export const LANGUAGES = [
   { code: 'el', name: 'Greek' },
 ];
 
+function decodeHtml(html) {
+  if (!html) return '';
+  if (typeof document !== 'undefined') {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+  }
+  return html
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'");
+}
+
 /**
  * Translate a single block of text.
  * @param {string} text   — text to translate
@@ -40,46 +56,76 @@ export const LANGUAGES = [
  */
 export async function translateText(text, target, source = 'en') {
   if (!text || !target || target === source) return text;
-  // MyMemory has a ~500 byte limit per request; if the text is too long,
-  // we split into sentences / paragraphs and translate each separately.
-  const maxBytes = 450; // leave room for URL encoding overhead
-  const encoder = new TextEncoder();
+
+  // Split text into small segments that fit comfortably in MyMemory API limits
+  const maxSegmentLength = 300;
   const segments = [];
-
-  // Split by sentence boundaries first
-  const raw = text.match(/[^.!?\n]+[.!?\n]*/g) || [text];
-
-  let current = '';
-  for (const seg of raw) {
-    const combined = current ? current + ' ' + seg : seg;
-    if (encoder.encode(combined).length > maxBytes && current) {
-      segments.push(current);
-      current = seg;
+  
+  // Split by paragraphs first
+  const paragraphs = text.split(/\n+/);
+  
+  for (const para of paragraphs) {
+    const trimmedPara = para.trim();
+    if (trimmedPara === '') continue;
+    
+    if (trimmedPara.length <= maxSegmentLength) {
+      segments.push(trimmedPara);
     } else {
-      current = combined;
+      // Split paragraph by sentences
+      const sentences = trimmedPara.match(/[^.!?\n]+[.!?\n]*/g) || [trimmedPara];
+      let currentSegment = '';
+      
+      for (const sentence of sentences) {
+        if ((currentSegment + sentence).length > maxSegmentLength) {
+          if (currentSegment) {
+            segments.push(currentSegment.trim());
+          }
+          if (sentence.length > maxSegmentLength) {
+            // Split long sentence by clauses or commas
+            const clauses = sentence.split(/[,;]/);
+            let currentClause = '';
+            for (const clause of clauses) {
+              if ((currentClause + clause).length > maxSegmentLength) {
+                if (currentClause) segments.push(currentClause.trim());
+                currentClause = clause;
+              } else {
+                currentClause = currentClause ? currentClause + ', ' + clause : clause;
+              }
+            }
+            if (currentClause) currentSegment = currentClause;
+          } else {
+            currentSegment = sentence;
+          }
+        } else {
+          currentSegment = currentSegment ? currentSegment + ' ' + sentence : sentence;
+        }
+      }
+      if (currentSegment) segments.push(currentSegment.trim());
     }
   }
-  if (current) segments.push(current);
+
+  if (segments.length === 0) return '';
 
   // Translate each segment and join
   const results = await Promise.all(
     segments.map(async (seg) => {
       const params = new URLSearchParams({
-        q: seg.slice(0, 500),
+        q: seg,
         langpair: `${source}|${target}`,
+        de: 'student@stemportal.local'
       });
-      // Adding a dummy email greatly increases the rate limit
-      params.set('de', 'student@stemportal.local');
 
       try {
         const res = await fetch(`${MYMEMORY_URL}?${params}`);
         const data = await res.json();
-        return data?.responseData?.translatedText || seg;
+        const translated = data?.responseData?.translatedText;
+        return translated ? decodeHtml(translated) : seg;
       } catch {
         return seg; // fallback to original on error
       }
     })
   );
 
-  return results.join(' ');
+  return results.join('\n\n');
 }
+
