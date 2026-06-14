@@ -5,6 +5,14 @@ databases:
     plan: free
 
 services:
+  # 0. Internal MongoDB (Bypasses Atlas)
+  - type: pserv
+    name: internal-mongo
+    env: docker
+    rootDir: .
+    dockerfilePath: Dockerfile.mongo
+    plan: free
+
   # 1. Spring Boot AKS Core Service
   - type: web
     name: coreservices-aks
@@ -26,8 +34,11 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     envVars:
-      - key: spring.data.mongodb.uri
-        value: mongodb+srv://admin:admin123@cluster0.q9ybvvg.mongodb.net/STEM?retryWrites=true&w=majority&appName=Cluster0
+      - key: INTERNAL_MONGO_HOSTPORT
+        fromService:
+          type: pserv
+          name: internal-mongo
+          property: hostport
 
   # 3. Node.js Review Service
   - type: web
@@ -37,8 +48,13 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     envVars:
+      - key: INTERNAL_MONGO_HOSTPORT
+        fromService:
+          type: pserv
+          name: internal-mongo
+          property: hostport
       - key: MONGODB_URI
-        value: mongodb+srv://admin:admin123@cluster0.q9ybvvg.mongodb.net/STEM?retryWrites=true&w=majority&appName=Cluster0
+        value: mongodb://${INTERNAL_MONGO_HOSTPORT}/STEM
 
   # 4. FastAPI Gateway
   - type: web
