@@ -39,13 +39,19 @@ function clean(s) {
 /** Convert a resource into a Mermaid `mindmap` definition. */
 function buildMermaid(resource) {
   const root = clean(resource.title) || 'Resource';
-  const lines = ['mindmap', `  root((${root}))`];
+  const lines = ['mindmap', `  root(("${root}"))`];
 
   const branch = (label, items) => {
     items = (items || []).filter(Boolean).map(clean).filter(Boolean);
     if (items.length === 0) return;
-    lines.push(`    ${label}`);
-    items.slice(0, 6).forEach(i => lines.push(`      ${i}`));
+    
+    const branchId = label.replace(/\s+/g, '');
+    lines.push(`    ${branchId}("${label}")`);
+    
+    items.slice(0, 6).forEach((i, idx) => {
+      const leafId = `${branchId}${idx}`;
+      lines.push(`      ${leafId}("${i}")`);
+    });
   };
 
   branch('Themes',         resource.keyThemes);
@@ -56,7 +62,9 @@ function buildMermaid(resource) {
 
   // Add a single-line "Why study this" leaf if present
   const why = resource.whyRead || resource.whyStudy;
-  if (why) lines.push(`    Why It Matters\n      ${clean(why)}`);
+  if (why) {
+    lines.push(`    WhyItMatters("Why It Matters")\n      WhyItMattersLeaf("${clean(why)}")`);
+  }
 
   // Author/period metadata as a sibling branch (only if present)
   const meta = [resource.author, resource.year, resource.period, resource.origin].filter(Boolean);
@@ -83,6 +91,12 @@ function ConceptMap({ resource }) {
         const { svg } = await mermaid.render(`concept-${id}`, src);
         if (!cancelled && containerRef.current) {
           containerRef.current.innerHTML = svg;
+          const svgEl = containerRef.current.querySelector('svg');
+          if (svgEl) {
+            svgEl.setAttribute('width', '100%');
+            svgEl.style.maxWidth = '100%';
+            svgEl.style.height = 'auto';
+          }
         }
       } catch (e) {
         if (!cancelled) setError(e.message || 'Failed to render concept map.');

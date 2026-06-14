@@ -6,3 +6,4 @@ from .externalController import router as ExternalRouter
 from .reviewsController import router as ReviewsRouter
 from .adminController import router as AdminRouter
 from .requestsController import router as RequestsRouter
+from .mongoMetadataController import router as MongoMetadataRouter
