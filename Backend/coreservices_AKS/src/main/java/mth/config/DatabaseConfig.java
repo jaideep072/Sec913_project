@@ -1,7 +1,8 @@
 package mth.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -28,21 +29,25 @@ public class DatabaseConfig {
 
             System.out.println("======> CONSTRUCTED JDBC URL: " + dbUrl);
 
-            return DataSourceBuilder.create()
-                    .url(dbUrl)
-                    .username(username)
-                    .password(password)
-                    .driverClassName("org.postgresql.Driver")
-                    .build();
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(dbUrl);
+            config.setUsername(username);
+            config.setPassword(password);
+            config.setDriverClassName("org.postgresql.Driver");
+            // Render Free Tier Postgres can take > 50s to spin up.
+            config.setConnectionTimeout(120000); // 120 seconds
+            config.setInitializationFailTimeout(0); // 0 means fail fast if connection cannot be established after timeout
+            
+            return new HikariDataSource(config);
         }
         
         // Fallback for local development
         System.out.println("======> FALLING BACK TO LOCALHOST JDBC URL");
-        return DataSourceBuilder.create()
-                .url("jdbc:postgresql://localhost:5432/Project_AKS")
-                .username("postgres")
-                .password("cybersec123")
-                .driverClassName("org.postgresql.Driver")
-                .build();
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:postgresql://localhost:5432/Project_AKS");
+        config.setUsername("postgres");
+        config.setPassword("cybersec123");
+        config.setDriverClassName("org.postgresql.Driver");
+        return new HikariDataSource(config);
     }
 }
