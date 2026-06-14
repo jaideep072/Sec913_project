@@ -33,7 +33,7 @@ services:
     plan: free
     envVars:
       - key: spring.data.mongodb.uri
-        sync: false # User needs to paste their MongoDB Atlas URI in the Render Dashboard
+        value: mongodb+srv://admin:admin123@cluster0.q9ybvvg.mongodb.net/STEM?retryWrites=true&w=majority&appName=Cluster0
 
   # 3. Node.js Review Service
   - type: web
@@ -43,7 +43,7 @@ services:
     plan: free
     envVars:
       - key: MONGODB_URI
-        sync: false # User needs to paste their MongoDB Atlas URI in the Render Dashboard
+        value: mongodb+srv://admin:admin123@cluster0.q9ybvvg.mongodb.net/STEM?retryWrites=true&w=majority&appName=Cluster0
 
   # 4. FastAPI Gateway
   - type: web
