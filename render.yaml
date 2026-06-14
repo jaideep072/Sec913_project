@@ -71,9 +71,4 @@ services:
     rootDir: Frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: aks-gateway
-          property: url
+    envVars: []
