@@ -9,13 +9,18 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 80;
 
-// The GATEWAY_HOSTPORT environment variable is injected by Render Blueprint
-const gatewayHostPort = process.env.GATEWAY_HOSTPORT;
-if (!gatewayHostPort) {
-  console.warn("WARNING: GATEWAY_HOSTPORT is not set. Proxy will likely fail.");
+// The GATEWAY_URL environment variable is injected by Render Blueprint.
+// It's the gateway's public RENDER_EXTERNAL_URL (e.g. https://aks-gateway-xxxx.onrender.com),
+// since Free-plan services can't talk to each other over the private network.
+const gatewayUrl = process.env.GATEWAY_URL;
+if (!gatewayUrl) {
+  console.warn("WARNING: GATEWAY_URL is not set. Proxy will likely fail.");
 }
 
-const targetUrl = `http://${gatewayHostPort}`;
+// Support both a full URL (https://...) and a bare host:port for local/dev use.
+const targetUrl = gatewayUrl && gatewayUrl.startsWith('http')
+  ? gatewayUrl
+  : `http://${gatewayUrl}`;
 console.log(`Starting Node.js Proxy Server`);
 console.log(`Targeting Gateway at: ${targetUrl}`);
 

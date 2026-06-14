@@ -48,21 +48,24 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     envVars:
+      # Use each service's PUBLIC onrender.com URL.
+      # Free services can't receive private-network ("hostport") traffic,
+      # so we must call them over their public HTTPS endpoints instead.
       - key: SPRING_URL
         fromService:
           type: web
           name: coreservices-aks
-          property: hostport
+          envVarKey: RENDER_EXTERNAL_URL
       - key: MONGO_SPRING_URL
         fromService:
           type: web
           name: coreservices-mongo
-          property: hostport
+          envVarKey: RENDER_EXTERNAL_URL
       - key: NODE_SERVICE_URL
         fromService:
           type: web
           name: node-service
-          property: hostport
+          envVarKey: RENDER_EXTERNAL_URL
 
   # 5. Frontend React App
   - type: web
@@ -73,11 +76,12 @@ services:
     startCommand: npm start
     plan: free
     envVars:
-      - key: GATEWAY_HOSTPORT
+      # Public URL of the gateway (see note above about hostport on free plan)
+      - key: GATEWAY_URL
         fromService:
           type: web
           name: aks-gateway
-          property: hostport
-          
+          envVarKey: RENDER_EXTERNAL_URL
+
       - key: VITE_API_BASE_URL
         value: /api
