@@ -21,9 +21,8 @@ app.use(express.json());
 // Register routers
 app.use('/reviews', reviewsRouter);
 
-// Connect to MongoDB using the URI from .env or construct it from Render's internal hostport
-const hostport = process.env.INTERNAL_MONGO_HOSTPORT;
-const MONGODB_URI = hostport ? `mongodb://${hostport}/STEM` : process.env.MONGODB_URI;
+// Connect to MongoDB using Render's predictable internal DNS
+const MONGODB_URI = 'mongodb://internal-mongo:27017/STEM';
 
 console.log('Connecting to MongoDB Atlas...');
 mongoose.connect(MONGODB_URI)
@@ -35,5 +34,4 @@ mongoose.connect(MONGODB_URI)
   })
   .catch((err) => {
     console.error('Failed to connect to Local MongoDB:', err.message);
-    process.exit(1);
   });
