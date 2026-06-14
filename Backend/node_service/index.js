@@ -34,5 +34,4 @@ mongoose.connect(MONGODB_URI)
   })
   .catch((err) => {
     console.error('Failed to connect to Local MongoDB:', err.message);
-    process.exit(1);
   });
