@@ -1,7 +1,7 @@
 databases:
   - name: aks-postgres
-    databaseName: Project_AKS
-    user: postgres
+    databaseName: project_aks
+    user: aks_admin
     plan: free
 
 services:
