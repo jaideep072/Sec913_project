@@ -8,7 +8,7 @@
 //   VITE_API_BASE_URL=http://localhost:8000
 
 let rawUrl = (import.meta.env && (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL)) || 'http://localhost:8000';
-if (rawUrl && !rawUrl.startsWith('http')) {
+if (rawUrl && !rawUrl.startsWith('http') && !rawUrl.startsWith('/')) {
   rawUrl = 'https://' + rawUrl;
 }
 const API_BASE_URL = rawUrl;

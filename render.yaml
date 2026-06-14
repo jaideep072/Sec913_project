@@ -67,8 +67,16 @@ services:
   # 5. Frontend React App
   - type: web
     name: aks-frontend
-    env: static
+    env: docker
     rootDir: Frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars: []
+    dockerfilePath: Dockerfile
+    plan: free
+    envVars:
+      - key: GATEWAY_HOSTPORT
+        fromService:
+          type: web
+          name: aks-gateway
+          property: hostport
+          
+      - key: VITE_API_BASE_URL
+        value: /api
