@@ -23,6 +23,10 @@ public class MenusRepository {
         return menus;
     }
 
+    public void save(Menus m) {
+        menus.add(m);
+    }
+
     public Long getMaxMenuId() {
         return findAll().stream()
                 .map(Menus::getMid)

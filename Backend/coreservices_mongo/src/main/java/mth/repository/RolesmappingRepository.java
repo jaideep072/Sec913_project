@@ -24,6 +24,14 @@ public class RolesmappingRepository {
         return mappings.stream().filter(r -> r.getRole().equals(role)).collect(Collectors.toList());
     }
 
+    public void save(Rolesmapping r) {
+        mappings.add(r);
+    }
+
+    public void saveAll(List<Rolesmapping> list) {
+        mappings.addAll(list);
+    }
+
     public void deleteByRole(Long role) {
         mappings.removeIf(r -> r.getRole().equals(role));
     }
