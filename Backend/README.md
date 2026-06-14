@@ -81,6 +81,20 @@ On the first boot, the seeder also inserts:
 - The 4 core sections: `literature`, `history`, `science`, `governance` (these are flagged `core=true` and can't be deleted from the Librarian UI)
 - A handful of example resources so the Student portal isn't empty
 
+### e) Running pgAdmin queries
+
+To view or modify data directly, you can use the pgAdmin Query Tool:
+
+1. Open **pgAdmin** and connect to your local server.
+2. Expand **Databases** → **Project_AKS** → **Schemas** → **public** → **Tables**.
+3. Right-click on a table (e.g., `users`) and select **View/Edit Data** → **All Rows**, or open the **Query Tool** (the database icon with a play button in the top toolbar).
+4. In the Query Tool, you can run standard SQL commands. For example:
+   ```sql
+   SELECT * FROM users;
+   SELECT * FROM resources;
+   ```
+5. Click the **Execute/Refresh** button (or press `F5`) to run the query and view the results in the Data Output panel.
+
 ---
 
 ## 2. Run the stack
@@ -214,6 +228,19 @@ DELETE /borrows/{id}
 ```
 
 Every borrow has a derived `status` field on read: `"active"`, `"overdue"`, or `"returned"`.
+
+### Testing APIs with Postman
+
+You can use **Postman** (or any API client like Insomnia or cURL) to test these endpoints manually:
+
+1. Open Postman and create a new **HTTP Request**.
+2. Set the HTTP method (GET, POST, PUT, DELETE) and enter the URL (e.g., `http://localhost:8001/authservice/signup` or `http://localhost:8001/sections`).
+3. For POST/PUT requests with a JSON body, go to the **Body** tab, select **raw**, and choose **JSON** from the dropdown. Enter your JSON payload.
+4. **Handling Authentication:** 
+   - First, send a `POST` request to `/authservice/signin` with valid credentials.
+   - Copy the `jwt` token string from the JSON response body.
+   - For any subsequent protected requests, go to the **Headers** tab, add a new header with the key `Token`, and paste your JWT string as the value.
+5. Click **Send** to view the API response.
 
 ---
 

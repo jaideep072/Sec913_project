@@ -176,6 +176,35 @@ npm run dev
 
 ---
 
+## 🧪 Testing & Database Management
+
+Once the application is running, you can manually interact with the API and Database using external tools.
+
+### 🐘 Running Queries with pgAdmin
+To view or modify data directly in the PostgreSQL database:
+1. Open **pgAdmin** and connect to your local database server.
+2. Expand **Databases** → **Project_AKS** → **Schemas** → **public** → **Tables**.
+3. Right-click on any table (like `users` or `resources`) and select **View/Edit Data** → **All Rows**, or open the **Query Tool** (database icon with a play button).
+4. Run standard SQL commands to inspect the data:
+   ```sql
+   SELECT * FROM users;
+   SELECT * FROM resources;
+   ```
+5. Click **Execute/Refresh** (or `F5`) to run the query.
+
+### 🚀 Testing APIs with Postman
+You can test the backend endpoints manually using **Postman**:
+1. Open Postman and create a new **HTTP Request**.
+2. Choose the HTTP Method (`GET`, `POST`, `PUT`, `DELETE`) and enter the URL (e.g., `http://localhost:8001/authservice/signin`).
+3. For requests requiring a body, go to the **Body** tab, choose **raw** and **JSON**, then provide your payload.
+4. **Handling Authentication (JWT):**
+   - Send a `POST` request to `/authservice/signin` with your credentials.
+   - Copy the `jwt` token from the response.
+   - For all protected routes, go to the **Headers** tab, add a key named `Token`, and paste your JWT as the value.
+5. Hit **Send** to see the API response.
+
+---
+
 ## 🤝 Contributing & Licensing
 
 Contributions to improve the Accessibility Knowledge Accessing System are always welcome. Please open an issue or submit a pull request via the [GitHub Repository](https://github.com/jaideep072/Sec913_project).
