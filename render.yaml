@@ -9,7 +9,8 @@ services:
   - type: web
     name: coreservices-aks
     env: docker
-    dockerfilePath: ./Backend/coreservices_AKS/Dockerfile
+    rootDir: Backend/coreservices_AKS
+    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: spring.datasource.url
@@ -29,7 +30,8 @@ services:
   - type: web
     name: coreservices-mongo
     env: docker
-    dockerfilePath: ./Backend/coreservices_mongo/Dockerfile
+    rootDir: Backend/coreservices_mongo
+    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: spring.data.mongodb.uri
@@ -39,7 +41,8 @@ services:
   - type: web
     name: node-service
     env: docker
-    dockerfilePath: ./Backend/node_service/Dockerfile
+    rootDir: Backend/node_service
+    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: MONGODB_URI
@@ -49,7 +52,8 @@ services:
   - type: web
     name: aks-gateway
     env: docker
-    dockerfilePath: ./Backend/gateway/Dockerfile
+    rootDir: Backend/gateway
+    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: SPRING_URL
@@ -69,12 +73,11 @@ services:
           property: host
 
   # 5. Frontend React App
-  - type: web
+  - type: static
     name: aks-frontend
-    env: static
+    rootDir: Frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: ./Frontend/dist
-    plan: free
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         fromService:
