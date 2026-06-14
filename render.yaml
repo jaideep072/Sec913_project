@@ -13,15 +13,23 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     envVars:
-      - key: spring.datasource.url
+      - key: DB_HOST
         fromDatabase:
           name: aks-postgres
-          property: connectionString
-      - key: spring.datasource.username
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: aks-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: aks-postgres
+          property: database
+      - key: DB_USER
         fromDatabase:
           name: aks-postgres
           property: user
-      - key: spring.datasource.password
+      - key: DB_PASSWORD
         fromDatabase:
           name: aks-postgres
           property: password
