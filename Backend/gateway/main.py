@@ -30,11 +30,10 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"code": 500, "message": "Internal Gateway Error", "details": str(exc)},
     )
 
-# CORS — Vite dev server runs on :5173
-origins = ["http://localhost:5173"]
+# CORS — Allow all origins for Render deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
