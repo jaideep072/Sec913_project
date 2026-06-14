@@ -53,8 +53,6 @@ services:
           type: pserv
           name: internal-mongo
           property: hostport
-      - key: MONGODB_URI
-        value: mongodb://${INTERNAL_MONGO_HOSTPORT}/STEM
 
   # 4. FastAPI Gateway
   - type: web

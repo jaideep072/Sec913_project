@@ -21,8 +21,9 @@ app.use(express.json());
 // Register routers
 app.use('/reviews', reviewsRouter);
 
-// Connect to MongoDB using the URI from .env
-const MONGODB_URI = process.env.MONGODB_URI;
+// Connect to MongoDB using the URI from .env or construct it from Render's internal hostport
+const hostport = process.env.INTERNAL_MONGO_HOSTPORT;
+const MONGODB_URI = hostport ? `mongodb://${hostport}/STEM` : process.env.MONGODB_URI;
 
 console.log('Connecting to MongoDB Atlas...');
 mongoose.connect(MONGODB_URI)
