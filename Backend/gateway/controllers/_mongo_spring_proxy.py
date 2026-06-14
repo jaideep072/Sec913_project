@@ -20,7 +20,7 @@ async def mongo_spring_request(method: str,
     if token:
         headers["Token"] = token
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=120.0) as client:
         response = await client.request(
             method,
             MONGO_SPRING_URL + path,
