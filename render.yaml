@@ -73,8 +73,9 @@ services:
           property: host
 
   # 5. Frontend React App
-  - type: static
+  - type: web
     name: aks-frontend
+    env: static
     rootDir: Frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
