@@ -2,6 +2,8 @@ import httpx
 import os
 
 MONGO_SPRING_URL = os.getenv("MONGO_SPRING_URL", "http://localhost:8020")
+if MONGO_SPRING_URL and not MONGO_SPRING_URL.startswith("http"):
+    MONGO_SPRING_URL = "http://" + MONGO_SPRING_URL
 
 
 async def mongo_spring_request(method: str,

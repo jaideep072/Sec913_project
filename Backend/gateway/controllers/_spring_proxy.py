@@ -11,6 +11,8 @@ import httpx
 import os
 
 SPRING_URL = os.getenv("SPRING_URL", "http://localhost:8001")
+if SPRING_URL and not SPRING_URL.startswith("http"):
+    SPRING_URL = "http://" + SPRING_URL
 
 
 async def spring_request(method: str,

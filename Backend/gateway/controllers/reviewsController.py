@@ -6,6 +6,8 @@ import os
 
 router = APIRouter(prefix="/reviews")
 NODE_SERVICE_URL = os.getenv("NODE_SERVICE_URL", "http://localhost:8002")
+if NODE_SERVICE_URL and not NODE_SERVICE_URL.startswith("http"):
+    NODE_SERVICE_URL = "http://" + NODE_SERVICE_URL
 
 @router.get("")
 async def get_reviews(resourceId: str = Query(...)):
