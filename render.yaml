@@ -52,17 +52,17 @@ services:
         fromService:
           type: web
           name: coreservices-aks
-          property: host
+          property: hostport
       - key: MONGO_SPRING_URL
         fromService:
           type: web
           name: coreservices-mongo
-          property: host
+          property: hostport
       - key: NODE_SERVICE_URL
         fromService:
           type: web
           name: node-service
-          property: host
+          property: hostport
 
   # 5. Frontend React App
   - type: web
