@@ -12,6 +12,7 @@ if (rawUrl && !rawUrl.startsWith('http')) {
   rawUrl = 'https://' + rawUrl;
 }
 const API_BASE_URL = rawUrl;
+console.log("AKS Frontend booting up. Target Gateway API:", API_BASE_URL);
 
 export const TOKEN_STORAGE_KEY = 'kp_jwt';
 

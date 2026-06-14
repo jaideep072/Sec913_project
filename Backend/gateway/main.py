@@ -21,6 +21,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(
         status_code=422,
         content={"code": 422, "message": "Validation Error", "details": exc.errors()},
+        headers={"Access-Control-Allow-Origin": "*"}
     )
 
 @app.exception_handler(Exception)
@@ -28,6 +29,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={"code": 500, "message": "Internal Gateway Error", "details": str(exc)},
+        headers={"Access-Control-Allow-Origin": "*"}
     )
 
 # CORS — Allow all origins for Render deployment
