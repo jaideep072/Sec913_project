@@ -66,7 +66,7 @@ services:
 
   # 5. Frontend React App
   - type: web
-    name: aks-frontend
+    name: aks-frontend-docker
     env: docker
     rootDir: Frontend
     dockerfilePath: Dockerfile
