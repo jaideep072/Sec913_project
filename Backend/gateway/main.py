@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from controllers.init import (
     AuthenticationRouter,
@@ -13,6 +15,20 @@ from controllers.init import (
 )
 
 app = FastAPI(title="AKS Gateway")
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"code": 422, "message": "Validation Error", "details": exc.errors()},
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"code": 500, "message": "Internal Gateway Error", "details": str(exc)},
+    )
 
 # CORS — Vite dev server runs on :5173
 origins = ["http://localhost:5173"]

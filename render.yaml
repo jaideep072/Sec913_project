@@ -1,0 +1,83 @@
+databases:
+  - name: aks-postgres
+    databaseName: Project_AKS
+    user: postgres
+    plan: free
+
+services:
+  # 1. Spring Boot AKS Core Service
+  - type: web
+    name: coreservices-aks
+    env: docker
+    dockerfilePath: ./Backend/coreservices_AKS/Dockerfile
+    plan: free
+    envVars:
+      - key: spring.datasource.url
+        fromDatabase:
+          name: aks-postgres
+          property: connectionString
+      - key: spring.datasource.username
+        fromDatabase:
+          name: aks-postgres
+          property: user
+      - key: spring.datasource.password
+        fromDatabase:
+          name: aks-postgres
+          property: password
+
+  # 2. Spring Boot Mongo Auth Service
+  - type: web
+    name: coreservices-mongo
+    env: docker
+    dockerfilePath: ./Backend/coreservices_mongo/Dockerfile
+    plan: free
+    envVars:
+      - key: spring.data.mongodb.uri
+        sync: false # User needs to paste their MongoDB Atlas URI in the Render Dashboard
+
+  # 3. Node.js Review Service
+  - type: web
+    name: node-service
+    env: docker
+    dockerfilePath: ./Backend/node_service/Dockerfile
+    plan: free
+    envVars:
+      - key: MONGODB_URI
+        sync: false # User needs to paste their MongoDB Atlas URI in the Render Dashboard
+
+  # 4. FastAPI Gateway
+  - type: web
+    name: aks-gateway
+    env: docker
+    dockerfilePath: ./Backend/gateway/Dockerfile
+    plan: free
+    envVars:
+      - key: SPRING_URL
+        fromService:
+          type: web
+          name: coreservices-aks
+          property: host
+      - key: MONGO_SPRING_URL
+        fromService:
+          type: web
+          name: coreservices-mongo
+          property: host
+      - key: NODE_SERVICE_URL
+        fromService:
+          type: web
+          name: node-service
+          property: host
+
+  # 5. Frontend React App
+  - type: web
+    name: aks-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./Frontend/dist
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: aks-gateway
+          property: host

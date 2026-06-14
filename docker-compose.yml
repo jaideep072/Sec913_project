@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: cybersec123
+      POSTGRES_DB: Project_AKS
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  coreservices-aks:
+    build:
+      context: ./Backend/coreservices_AKS
+    ports:
+      - "8001:8001"
+    environment:
+      - spring.datasource.url=jdbc:postgresql://postgres:5432/Project_AKS
+    depends_on:
+      - postgres
+
+  coreservices-mongo:
+    build:
+      context: ./Backend/coreservices_mongo
+    ports:
+      - "8020:8020"
+    environment:
+      - spring.data.mongodb.uri=mongodb://mongo:27017/aks
+    depends_on:
+      - mongo
+
+  node-service:
+    build:
+      context: ./Backend/node_service
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/aks
+      - PORT=8002
+
+  gateway:
+    build:
+      context: ./Backend/gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - SPRING_URL=http://coreservices-aks:8001
+      - MONGO_SPRING_URL=http://coreservices-mongo:8020
+      - NODE_SERVICE_URL=http://node-service:8002
+    depends_on:
+      - coreservices-aks
+      - coreservices-mongo
+      - node-service
+
+  frontend:
+    build:
+      context: ./Frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - gateway
+
+volumes:
+  postgres_data:
+  mongo_data:

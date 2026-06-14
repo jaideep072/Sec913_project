@@ -8,8 +8,9 @@ can authorize the call.
 """
 
 import httpx
+import os
 
-SPRING_URL = "http://localhost:8001"
+SPRING_URL = os.getenv("SPRING_URL", "http://localhost:8001")
 
 
 async def spring_request(method: str,

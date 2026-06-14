@@ -2,8 +2,10 @@ import httpx
 from fastapi import APIRouter, Header, Request, Response, HTTPException, Query
 from typing import Optional
 
+import os
+
 router = APIRouter(prefix="/reviews")
-NODE_SERVICE_URL = "http://localhost:8002"
+NODE_SERVICE_URL = os.getenv("NODE_SERVICE_URL", "http://localhost:8002")
 
 @router.get("")
 async def get_reviews(resourceId: str = Query(...)):

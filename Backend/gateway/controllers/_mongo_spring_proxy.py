@@ -1,6 +1,7 @@
 import httpx
+import os
 
-MONGO_SPRING_URL = "http://localhost:8020"
+MONGO_SPRING_URL = os.getenv("MONGO_SPRING_URL", "http://localhost:8020")
 
 
 async def mongo_spring_request(method: str,
