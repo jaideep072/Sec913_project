@@ -8,4 +8,4 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=builder /app/target/*.war app.war
 EXPOSE 8001
-CMD ["java", "-jar", "app.war"]
+CMD ["java", "-Djava.net.preferIPv4Stack=true", "-jar", "app.war"]

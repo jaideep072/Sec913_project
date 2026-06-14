@@ -24,7 +24,9 @@ public class DatabaseConfig {
             String username = dbUri.getUserInfo().split(":")[0];
             String password = dbUri.getUserInfo().split(":")[1];
             int port = dbUri.getPort() == -1 ? 5432 : dbUri.getPort();
-            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + port + dbUri.getPath() + "?sslmode=prefer";
+            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + port + dbUri.getPath();
+
+            System.out.println("======> CONSTRUCTED JDBC URL: " + dbUrl);
 
             return DataSourceBuilder.create()
                     .url(dbUrl)
@@ -35,6 +37,7 @@ public class DatabaseConfig {
         }
         
         // Fallback for local development
+        System.out.println("======> FALLING BACK TO LOCALHOST JDBC URL");
         return DataSourceBuilder.create()
                 .url("jdbc:postgresql://localhost:5432/Project_AKS")
                 .username("postgres")
