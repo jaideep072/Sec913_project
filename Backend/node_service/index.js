@@ -21,17 +21,7 @@ app.use(express.json());
 // Register routers
 app.use('/reviews', reviewsRouter);
 
-// Connect to MongoDB using the URI from .env
-const MONGODB_URI = process.env.MONGODB_URI;
-
-console.log('Connecting to MongoDB Atlas...');
-mongoose.connect(MONGODB_URI)
-  .then(() => {
-    console.log('Connected to MongoDB (Atlas) successfully!');
-    app.listen(PORT, () => {
-      console.log(`Node.js reviews service running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('Failed to connect to Local MongoDB:', err.message);
-  });
+// In-memory bypass for MongoDB
+app.listen(PORT, () => {
+  console.log(`Node.js reviews service running on port ${PORT} (In-Memory Mode)`);
+});
