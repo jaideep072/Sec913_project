@@ -66,10 +66,11 @@ services:
 
   # 5. Frontend React App
   - type: web
-    name: aks-frontend-docker
-    env: docker
+    name: aks-frontend-node
+    env: node
     rootDir: Frontend
-    dockerfilePath: Dockerfile
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     plan: free
     envVars:
       - key: GATEWAY_HOSTPORT
