@@ -12,36 +12,33 @@
 
 ---
 
-## 🚀 Overview
+## 🌟 Comprehensive Features
 
-The **Accessible Knowledge Accessing System (AKS)** is a robust, full-stack application built to democratize access to knowledge. It combines a modern interactive frontend with a highly scalable microservices backend. 
+The AKS platform is heavily feature-rich, focusing on breaking down learning barriers through robust accessibility standards and powerful management tools.
 
-With accessibility at its core, AKS features **Text-to-Speech (Read Aloud)**, **Live Translations**, and **Interactive Concept Maps (Knowledge Graphs)** to cater to diverse learning needs.
+### 🧩 1. Deep Accessibility Integration (A11y)
+- **Text-to-Speech (Read-Aloud):** Integrated TTS system allowing visually impaired or auditory learners to easily consume textual content.
+- **Real-Time Translation:** On-the-fly multi-language translation capabilities to overcome language barriers.
+- **Keyboard Navigation & Focus Trapping:** Carefully crafted UI logic ensuring that screen-reader users and keyboard-only navigators can use the platform safely and effectively.
 
-## 🏗️ Architecture & Tech Stack
+### 🧠 2. Interactive Visualizations
+- **Knowledge Graphs & Concept Maps:** Powered by D3.js and Mermaid, the system dynamically generates interactive node-link diagrams that help learners visualize the relationships between complex educational topics and resources.
 
-The application is built using a modern **Microservices Architecture**, ensuring high scalability, modularity, and performance.
+### 🎭 3. Role-Based Access & Dashboards
+The application provides distinct portals tailored to different operational needs:
+- **Admin Dashboard:** System-wide management, global analytics, and user oversight.
+- **Librarian Dashboard:** Specialized tools for managing library catalogs, handling resource states, and organizing digital inventory.
+- **Staff Dashboard:** Day-to-day operations and internal library tracking.
+- **User Portal:** Clean, intuitive interface for end-users to browse, read, and interact with the catalog.
 
-### 🎨 Frontend (Client-Side)
-- **React (Vite):** Blazing fast UI development.
-- **D3.js & Mermaid:** For rendering dynamic, interactive Knowledge Graphs and Concept Maps.
-- **Accessibility:** Built-in `ReadAloud` and `Translation` services.
+### 📑 4. Automated Citation Generator
+- A built-in utility that automatically formats academic and structural citations for digital resources, saving students and researchers critical time.
 
-### ⚙️ Backend (Microservices)
-- **FastAPI Gateway (Python):** Central API Gateway acting as the single entry point for the frontend, routing requests to appropriate microservices.
-- **Spring Boot Core Service (Java + PostgreSQL):** Handles structured, relational data such as user authentication, resource management, and administration.
-- **Spring Boot Meta Service (Java + MongoDB):** Manages unstructured data, complex metadata, and document storage.
-- **Node.js Reviews Service (Express + MongoDB):** A dedicated lightweight service for handling user reviews, ratings, and social interactions.
-
----
-
-## 🌟 Key Features
-
-- **🧠 Interactive Knowledge Graphs:** Visualize connections between different topics and resources using D3.js.
-- **🗣️ Accessibility First:** Integrated Read-Aloud (TTS) and real-time text translation to support all users.
-- **🔐 Secure Authentication:** Robust user and admin authentication flows.
-- **📊 Comprehensive Dashboards:** Specialized views for regular users, librarians, and administrators.
-- **🚀 Scalable Microservices:** Independent services for Core Logic, Metadata, and Reviews.
+### ⚙️ 5. Scalable Microservices Architecture
+- **FastAPI Gateway (Python):** Central API Gateway acting as the single entry point for the frontend, dynamically routing requests.
+- **Spring Boot Core Service (Java + PostgreSQL):** Handles structured, relational data (users, auth, primary catalogs).
+- **Spring Boot Meta Service (Java + MongoDB):** Manages unstructured data and highly dynamic complex metadata.
+- **Node.js Reviews Service (Express + MongoDB):** A dedicated, lightweight REST service for processing user reviews, ratings, and social engagement.
 
 ---
 
@@ -56,7 +53,9 @@ Make sure you have the following installed:
 - [Java Development Kit (JDK)](https://adoptium.net/) (v17+)
 - [PostgreSQL](https://www.postgresql.org/) and [MongoDB](https://www.mongodb.com/) running locally.
 
-### 🚀 Running the Project
+---
+
+### 🚀 Option 1: Automated Startup (Windows Only)
 
 For Windows users, we have provided convenient batch scripts to start all services simultaneously!
 
@@ -67,20 +66,55 @@ For Windows users, we have provided convenient batch scripts to start all servic
    ```
 
 2. **Start the Entire Stack (All 5 Services):**
-   Simply double-click or run:
+   Simply double-click or run from the root directory:
    ```cmd
    start.bat
    ```
-   *This will launch:*
-   - **Port 8001:** Spring Boot PostgreSQL Backend
-   - **Port 8020:** Spring Boot MongoDB Backend
-   - **Port 8002:** Node.js Reviews Backend
-   - **Port 8000:** FastAPI Gateway
-   - **Port 5173:** React Frontend
 
-3. **Alternative Startup Scripts:**
-   - `start_spring_boot.bat`: Starts only the Spring Boot services, the Gateway, and the Frontend.
-   - `start_node_reviews.bat`: Starts only the Node.js Reviews service.
+---
+
+### 🚀 Option 2: Traditional Manual Startup (Cross-Platform)
+
+If you are on macOS/Linux, or prefer to run the services individually to monitor their specific logs, follow this sequence. *Ensure your local Postgres and MongoDB instances are running before starting.*
+
+#### 1. Start the Spring Boot Core Service (Port 8001)
+```bash
+cd Backend/coreservices_AKS
+./mvnw spring-boot:run
+```
+
+#### 2. Start the Spring Boot Meta Service (Port 8020)
+Open a new terminal window:
+```bash
+cd Backend/coreservices_mongo
+./mvnw spring-boot:run
+```
+
+#### 3. Start the Node.js Reviews Service (Port 8002)
+Open a new terminal window:
+```bash
+cd Backend/node_service
+npm install
+npm start
+```
+
+#### 4. Start the FastAPI Gateway (Port 8000)
+Open a new terminal window:
+```bash
+cd Backend/gateway
+pip install -r requirements.txt
+python run.py
+```
+
+#### 5. Start the React Frontend (Port 5173)
+Open a new terminal window:
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+The application will now be accessible at **http://localhost:5173**!
 
 ---
 
