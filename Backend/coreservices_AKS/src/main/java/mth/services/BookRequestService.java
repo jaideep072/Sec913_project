@@ -12,11 +12,9 @@ import mth.models.BookRequest;
 import mth.models.BookRequest.Status;
 import mth.models.Borrow;
 import mth.models.Resource;
-import mth.models.Users;
 import mth.repository.BookRequestRepository;
 import mth.repository.BorrowRepository;
 import mth.repository.ResourceRepository;
-import mth.repository.UsersRepository;
 import mth.security.AccessDeniedException;
 import mth.security.AuthContext;
 import mth.security.NotFoundException;
@@ -36,7 +34,6 @@ public class BookRequestService {
 	@Autowired private BookRequestRepository requestRepo;
 	@Autowired private ResourceRepository resourceRepo;
 	@Autowired private BorrowRepository borrowRepo;
-	@Autowired private UsersRepository usersRepo;
 
 	public List<BookRequest> list(String statusFilter) {
 		RoleGuard.requireLoggedIn();

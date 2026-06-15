@@ -21,11 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import mth.models.BookRequest;
 import mth.models.BookRequest.Status;
 import mth.models.Resource;
-import mth.models.Users;
 import mth.repository.BookRequestRepository;
 import mth.repository.ResourceRepository;
 import mth.repository.SectionRepository;
-import mth.repository.UsersRepository;
 import mth.security.AuthContext;
 import mth.security.NotFoundException;
 import mth.security.RoleGuard;
@@ -58,7 +56,6 @@ public class OpenLibraryService {
 	@Autowired private ResourceRepository resourceRepo;
 	@Autowired private SectionRepository sectionRepo;
 	@Autowired private BookRequestRepository requestRepo;
-	@Autowired private UsersRepository usersRepo;
 
 	/** Anyone logged in can search; importing requires Librarian/Admin. */
 	public List<Map<String, Object>> search(String query, int limit) throws Exception {
