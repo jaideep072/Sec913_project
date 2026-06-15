@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Header
+from fastapi.responses import JSONResponse
 from models.schemas import SigninSchema, SignupSchema
 from controllers._mongo_spring_proxy import mongo_spring_request
 
@@ -60,5 +61,5 @@ async def uinfo(Token: str = Header(...)):
         role_int = res.get("role", 1)
         res["role"] = ROLE_MAP_INT_TO_STR.get(role_int, "Student")
         res["id"] = res.get("email", "")
-    return res
+    return JSONResponse(status_code=res.get("code", 500) if "code" in res else 200, content=res)
 
