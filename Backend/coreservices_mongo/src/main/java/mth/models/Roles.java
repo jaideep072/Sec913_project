@@ -1,7 +1,12 @@
 package mth.models;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "roles")
 public class Roles {
 
+    @Id
     private String id;
 
     Long role;

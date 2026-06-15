@@ -41,7 +41,8 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println("[DataInitializer] 'Roles' menu already present (mid=" + rolesMenu.getMid() + ")");
             } else {
                 rolesMenu = new Menus();
-                Long nextMid = menusRepo.getMaxMenuId() + 1;
+                Menus topMenu = menusRepo.findTopByOrderByMidDesc();
+                Long nextMid = (topMenu != null && topMenu.getMid() != null) ? topMenu.getMid() + 1 : 1L;
                 rolesMenu.setMid(nextMid);
                 rolesMenu.setMenu("Roles");
                 rolesMenu.setIcon("menu.png");

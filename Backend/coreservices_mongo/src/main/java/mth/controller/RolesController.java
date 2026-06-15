@@ -40,7 +40,8 @@ public class RolesController {
 
 			// Auto-assign next role id (PK is not auto-generated on the entity)
 			if (role.getRole() == null) {
-				Long nextId = repo.getMaxRoleId() + 1;
+				Roles topRole = repo.findTopByOrderByRoleDesc();
+				Long nextId = (topRole != null && topRole.getRole() != null) ? topRole.getRole() + 1 : 1L;
 				role.setRole(nextId);
 			}
 

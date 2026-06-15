@@ -40,7 +40,8 @@ public class MenusController {
 
 			// Auto-assign next menu id (PK is not auto-generated on the entity)
 			if (menu.getMid() == null) {
-				Long nextId = repo.getMaxMenuId() + 1;
+				Menus topMenu = repo.findTopByOrderByMidDesc();
+				Long nextId = (topMenu != null && topMenu.getMid() != null) ? topMenu.getMid() + 1 : 1L;
 				menu.setMid(nextId);
 			}
 
