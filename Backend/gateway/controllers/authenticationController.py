@@ -34,7 +34,8 @@ async def signup(U: SignupSchema):
         "status": 1
     }
     print("GATEWAY SIGNUP BODY:", body, flush=True)
-    return await mongo_spring_request("POST", "/authservice/signup", json=body)
+    res = await mongo_spring_request("POST", "/authservice/signup", json=body)
+    return JSONResponse(status_code=res.get("code", 500) if "code" in res else 200, content=res)
 
 
 @router.post("/signin")
@@ -49,7 +50,7 @@ async def signin(U: SigninSchema):
             res["role"] = ROLE_MAP_INT_TO_STR.get(role_int, "Student")
             res["fullname"] = uinfo_res.get("fullname", "")
             res["id"] = U.username  # Use email as the identifier (like frontend defaults)
-    return res
+    return JSONResponse(status_code=res.get("code", 500) if "code" in res else 200, content=res)
 
 
 @router.get("/uinfo")
