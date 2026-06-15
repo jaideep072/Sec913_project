@@ -59,7 +59,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 					roleStr = (String) rawRole;
 				}
 				
-				AuthContext.set(new AuthContext(email, roleStr));
+				String fullname = (String) payload.get("fullname");
+				
+				AuthContext.set(new AuthContext(email, roleStr, fullname));
 			} catch (Exception ignored) {
 				// Bad/expired token: don't reject here — RoleGuard will throw 401
 				// when a protected endpoint is hit.

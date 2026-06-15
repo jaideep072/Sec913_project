@@ -306,15 +306,18 @@ public class ArxivService {
 			r = resourceRepo.save(r);
 		}
 
-		Users u = usersRepo.findByEmail(AuthContext.get().getEmail())
-				.orElseThrow(() -> new NotFoundException("Caller user not found."));
+		String email = AuthContext.get().getEmail();
+		String fullname = AuthContext.get().getFullname();
+		if (fullname == null || fullname.isBlank()) {
+			fullname = "Student"; // Fallback if missing
+		}
 		String notes = str(payload.get("notes"));
 
 		BookRequest br = new BookRequest();
 		br.setResourceId(r.getId());
 		br.setResourceTitle(r.getTitle());
-		br.setStudentEmail(u.getEmail());
-		br.setStudentName(u.getFullname());
+		br.setStudentEmail(email);
+		br.setStudentName(fullname);
 		br.setNotes(notes == null ? "" : notes);
 		br.setStatus(Status.PENDING);
 		return requestRepo.save(br);

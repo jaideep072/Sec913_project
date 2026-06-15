@@ -18,10 +18,11 @@ public class JwtService {
 	public final SecretKey key = Keys.hmacShaKeyFor(SECRETE_KEY.getBytes());
 
 	// Generate JWT
-	public Object generateJWT(Object username, Object role) throws Exception {
+	public Object generateJWT(Object username, Object role, Object fullname) throws Exception {
 		Map<String, Object> payload = new HashMap<>();
 		payload.put("username", username);
 		payload.put("role", role);
+		payload.put("fullname", fullname);
 
 		return Jwts.builder().claims(payload).issuedAt(new Date()).expiration(new Date(new Date().getTime() + 86400000))
 				.signWith(key).compact();
@@ -41,6 +42,7 @@ public class JwtService {
 
 		payload.put("username", claims.get("username"));
 		payload.put("role", claims.get("role"));
+		payload.put("fullname", claims.get("fullname"));
 
 		return payload;
 	}

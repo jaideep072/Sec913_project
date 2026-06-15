@@ -7,10 +7,8 @@ import org.springframework.stereotype.Component;
 
 import mth.models.Resource;
 import mth.models.Section;
-import mth.models.Users;
 import mth.repository.ResourceRepository;
 import mth.repository.SectionRepository;
-import mth.repository.UsersRepository;
 
 /**
  * Idempotent first-run seed: creates the 5 STEM core sections
@@ -25,19 +23,15 @@ public class DataSeeder implements CommandLineRunner {
 
 	private final SectionRepository sectionRepo;
 	private final ResourceRepository resourceRepo;
-	private final UsersRepository usersRepo;
 
 	public DataSeeder(SectionRepository sectionRepo,
-			ResourceRepository resourceRepo,
-			UsersRepository usersRepo) {
+			ResourceRepository resourceRepo) {
 		this.sectionRepo = sectionRepo;
 		this.resourceRepo = resourceRepo;
-		this.usersRepo = usersRepo;
 	}
 
 	@Override
 	public void run(String... args) {
-		seedAdminUser();
 
 		seedSection("physics", "Physics",
 				"From quantum mechanics to cosmology — fundamental laws of the universe.");
@@ -49,29 +43,18 @@ public class DataSeeder implements CommandLineRunner {
 				"Genetics, evolution, molecular biology, and life sciences.");
 		seedSection("finance", "Finance",
 				"Markets, econometrics, quantitative finance, and economic theory.");
+		seedSection("literature", "Literature",
+				"Classic and modern works of fiction, poetry, and drama.");
+		seedSection("history", "History",
+				"Historical accounts, biographies, and analyses of past events.");
+		seedSection("science", "Science",
+				"General science, discoveries, and scientific methods.");
+		seedSection("governance", "Governance",
+				"Political science, public policy, and systems of government.");
 
 		if (resourceRepo.count() == 0) {
 			seedSampleResources();
 		}
-	}
-
-	/**
-	 * Pre-creates the single Admin account so it exists on first boot.
-	 * Idempotent: if a row with this email already exists, it's left alone
-	 * (so an admin can change their own password later without it being reset).
-	 */
-	private void seedAdminUser() {
-		String adminEmail = "reachsainikhil@gmail.com";
-		if (usersRepo.existsByEmail(adminEmail)) return;
-
-		Users admin = new Users();
-		admin.setFullname("Sai Nikhil (Admin)");
-		admin.setPhone("");
-		admin.setEmail(adminEmail);
-		admin.setPassword("Sainikhil@1");   // plain text to match existing pattern
-		admin.setRole("Admin");
-		admin.setStatus(1);
-		usersRepo.save(admin);
 	}
 
 	private void seedSection(String id, String name, String description) {

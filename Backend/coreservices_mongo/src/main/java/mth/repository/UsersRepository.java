@@ -21,8 +21,19 @@ public class UsersRepository {
         return users.stream().filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password)).findFirst();
     }
 
+    public Optional<Users> findById(String id) {
+        return users.stream().filter(u -> id.equals(u.getId())).findFirst();
+    }
+
     public void save(Users u) {
+        if (u.getId() == null) {
+            u.setId(java.util.UUID.randomUUID().toString());
+        }
         users.add(u);
+    }
+
+    public void delete(Users u) {
+        users.remove(u);
     }
 
     public List<Users> findAll() {

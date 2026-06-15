@@ -12,14 +12,17 @@ public class AuthContext {
 
 	private final String email;
 	private final String role;
+	private final String fullname;
 
-	public AuthContext(String email, String role) {
+	public AuthContext(String email, String role, String fullname) {
 		this.email = email;
 		this.role = role;
+		this.fullname = fullname;
 	}
 
 	public String getEmail() { return email; }
 	public String getRole() { return role; }
+	public String getFullname() { return fullname; }
 
 	public static void set(AuthContext ctx) { CURRENT.set(ctx); }
 	public static AuthContext get() { return CURRENT.get(); }

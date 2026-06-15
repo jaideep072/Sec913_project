@@ -64,7 +64,7 @@ public class UsersService {
             if (userOpt.isPresent()) {
                 Users user = userOpt.get();
                 response.put("code", 200);
-                response.put("jwt", JWT.generateJWT(username, user.getRole()));
+                response.put("jwt", JWT.generateJWT(username, user.getRole(), user.getFullname()));
             } else {
                 response.put("code", 404);
                 response.put("message", "Invalid Credentials!");
@@ -112,5 +112,72 @@ public class UsersService {
 
     public Object getAllUsers() {
         return UR.findAll();
+    }
+
+    public Object setUserRole(String userId, String roleName) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<Users> userOpt = UR.findById(userId);
+            if (!userOpt.isPresent()) {
+                response.put("code", 404);
+                response.put("message", "User not found");
+                return response;
+            }
+            int roleId = 1;
+            if ("Staff".equalsIgnoreCase(roleName)) roleId = 2;
+            else if ("Admin".equalsIgnoreCase(roleName)) roleId = 3;
+            else if ("Librarian".equalsIgnoreCase(roleName)) roleId = 4;
+
+            Users u = userOpt.get();
+            u.setRole(roleId);
+            // In-memory list updates directly, but typically UR.save(u)
+            response.put("code", 200);
+            response.put("message", "Role updated successfully");
+            response.put("user", u);
+        } catch (Exception e) {
+            response.put("code", 500);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    public Object setUserStatus(String userId, int status) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<Users> userOpt = UR.findById(userId);
+            if (!userOpt.isPresent()) {
+                response.put("code", 404);
+                response.put("message", "User not found");
+                return response;
+            }
+            Users u = userOpt.get();
+            u.setStatus(status);
+            response.put("code", 200);
+            response.put("message", "Status updated successfully");
+            response.put("user", u);
+        } catch (Exception e) {
+            response.put("code", 500);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    public Object deleteUser(String userId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<Users> userOpt = UR.findById(userId);
+            if (!userOpt.isPresent()) {
+                response.put("code", 404);
+                response.put("message", "User not found");
+                return response;
+            }
+            UR.delete(userOpt.get());
+            response.put("code", 200);
+            response.put("message", "User deleted successfully");
+        } catch (Exception e) {
+            response.put("code", 500);
+            response.put("message", e.getMessage());
+        }
+        return response;
     }
 }
