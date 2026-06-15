@@ -5,8 +5,6 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
 </div>
 
-<h1 align="center">Accessible Knowledge Accessing System (AKS) 📚✨</h1>
-
 <p align="center">
   <strong>An ultra-comprehensive, highly scalable microservices platform engineered to democratize access to educational resources, interactive knowledge graphs, and library circulation services.</strong>
 </p>
@@ -14,24 +12,35 @@
 ---
 
 ## 📖 Table of Contents
-1. [Platform Overview](#-platform-overview)
-2. [Exhaustive Feature Breakdown](#-exhaustive-feature-breakdown)
-   - [Accessibility Suite (A11y)](#1-accessibility-suite-a11y)
-   - [Interactive Visualizations](#2-interactive-visualizations)
-   - [Role-Based Portals](#3-role-based-portals-and-management)
-   - [Resource & Circulation System](#4-resource--circulation-system)
-   - [Social & Academic Tools](#5-social--academic-tools)
-3. [Microservices Architecture Deep Dive](#%EF%B8%8F-microservices-architecture-deep-dive)
-4. [Data Models & Entities](#-data-models--entities)
-5. [Getting Started & Installation](#-getting-started--installation)
-   - [Option 1: Windows Automated Startup](#option-1-automated-startup-windows-only)
-   - [Option 2: Traditional Manual Setup](#option-2-traditional-manual-startup-cross-platform)
+- [📖 Table of Contents](#-table-of-contents)
+- [🚀 Platform Overview](#-platform-overview)
+- [🌟 Exhaustive Feature Breakdown](#-exhaustive-feature-breakdown)
+  - [1. Accessibility Suite (A11y)](#1-accessibility-suite-a11y)
+  - [2. Interactive Visualizations](#2-interactive-visualizations)
+  - [3. Role-Based Portals and Management](#3-role-based-portals-and-management)
+  - [4. Resource \& Circulation System](#4-resource--circulation-system)
+  - [5. Social \& Academic Tools](#5-social--academic-tools)
+- [⚙️ Microservices Architecture Deep Dive](#️-microservices-architecture-deep-dive)
+- [🗂️ Data Models \& Entities](#️-data-models--entities)
+- [🛠️ Getting Started \& Installation](#️-getting-started--installation)
+  - [Prerequisites](#prerequisites)
+  - [🚀 Option 1: Automated Startup (Windows Only)](#-option-1-automated-startup-windows-only)
+  - [🚀 Option 2: Traditional Manual Startup (Cross-Platform)](#-option-2-traditional-manual-startup-cross-platform)
+    - [1. Start the Java/Postgres Core Service (Port 8001)](#1-start-the-javapostgres-core-service-port-8001)
+    - [2. Start the Java/MongoDB Meta Service (Port 8020)](#2-start-the-javamongodb-meta-service-port-8020)
+    - [3. Start the Node.js Reviews Service (Port 8002)](#3-start-the-nodejs-reviews-service-port-8002)
+    - [4. Start the Python FastAPI Gateway (Port 8000)](#4-start-the-python-fastapi-gateway-port-8000)
+    - [5. Start the React Frontend (Port 5173)](#5-start-the-react-frontend-port-5173)
+- [🧪 Testing \& Database Management](#-testing--database-management)
+  - [🐘 Running Queries with pgAdmin](#-running-queries-with-pgadmin)
+  - [🚀 Testing APIs with Postman](#-testing-apis-with-postman)
+- [🤝 Contributing \& Licensing](#-contributing--licensing)
 
 ---
 
 ## 🚀 Platform Overview
 
-The **Accessible Knowledge Accessing System (AKS)** is a robust digital library and knowledge management system built from the ground up to ensure learning is universally accessible. Unlike traditional catalogs, AKS enriches data with deep metadata, links concepts through graph visualizations, and provides first-class accessibility tooling for every user. 
+
 
 The application is powered by a **polyglot microservices architecture** that handles distinct domains using the best tool for the job: Java/PostgreSQL for transactional core logic, Java/MongoDB for complex metadata, Node.js/MongoDB for high-throughput reviews, and Python/FastAPI for a centralized API gateway.
 
@@ -71,13 +80,13 @@ The platform features granular access control tailored to four distinct user rol
 
 AKS utilizes a heavily decoupled architecture to ensure maximum scalability and fault isolation. 
 
-| Service | Port | Technology | Primary Responsibility |
-| :--- | :--- | :--- | :--- |
-| **API Gateway** | `8000` | Python, FastAPI | Single entry point for the frontend. Handles CORS, route forwarding, and aggregating responses from multiple microservices securely. |
-| **Core Service** | `8001` | Java Spring Boot, PostgreSQL | Manages strict relational data: User Accounts, Authentication, Sections, and Circulation (Borrows). |
-| **Meta Service** | `8020` | Java Spring Boot, MongoDB | Manages highly dynamic, unstructured JSON data. Handles deep Resource metadata (Tags, Related Topics, Quotes) that doesn't fit neatly into SQL rows. |
-| **Reviews Service**| `8002` | Node.js, Express, MongoDB | A lightweight, event-driven service specifically dedicated to handling high-volume user reviews and ratings. |
-| **Frontend UI** | `5173` | React, Vite, D3.js | The dynamic Single Page Application (SPA) providing the user interfaces and visualizations. |
+| Service             | Port   | Technology                   | Primary Responsibility                                                                                                                               |
+| :------------------ | :----- | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **API Gateway**     | `8000` | Python, FastAPI              | Single entry point for the frontend. Handles CORS, route forwarding, and aggregating responses from multiple microservices securely.                 |
+| **Core Service**    | `8001` | Java Spring Boot, PostgreSQL | Manages strict relational data: User Accounts, Authentication, Sections, and Circulation (Borrows).                                                  |
+| **Meta Service**    | `8020` | Java Spring Boot, MongoDB    | Manages highly dynamic, unstructured JSON data. Handles deep Resource metadata (Tags, Related Topics, Quotes) that doesn't fit neatly into SQL rows. |
+| **Reviews Service** | `8002` | Node.js, Express, MongoDB    | A lightweight, event-driven service specifically dedicated to handling high-volume user reviews and ratings.                                         |
+| **Frontend UI**     | `5173` | React, Vite, D3.js           | The dynamic Single Page Application (SPA) providing the user interfaces and visualizations.                                                          |
 
 ---
 
